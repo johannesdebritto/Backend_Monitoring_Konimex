@@ -9,7 +9,7 @@ const db = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    timezone: 'Asia/Jakarta', // ⬅ Tambahin ini biar waktu otomatis WIB
+    timezone: '+07:00', // Gunakan offset UTC // ⬅ Tambahin ini biar waktu otomatis WIB
     dateStrings: true, // ⬅ Supaya datetime disimpan sebagai string, bukan objek
 });
 
