@@ -112,13 +112,10 @@ router.get('/anggota/search', async(req, res) => {
     }
 });
 
-router.get('/unit_kerja/search', async(req, res) => {
+router.get('/unit_kerja/list', async(req, res) => {
     try {
-        const search = req.query.q || '';
-        const query = `SELECT nama_unit FROM unit_kerja WHERE nama_unit LIKE ? LIMIT 8`;
-        const searchTerm = `%${search}%`;
-
-        const [results] = await db.execute(query, [searchTerm]);
+        const query = `SELECT nama_unit FROM unit_kerja LIMIT 8`;
+        const [results] = await db.execute(query);
         const unitNames = results.map(row => ({ label: row.nama_unit, value: row.nama_unit }));
 
         res.json(unitNames);
@@ -128,13 +125,10 @@ router.get('/unit_kerja/search', async(req, res) => {
     }
 });
 
-router.get('/patroli/search', async(req, res) => {
+router.get('/patroli/list', async(req, res) => {
     try {
-        const search = req.query.q || '';
-        const query = `SELECT nomor_patroli FROM patroli WHERE nomor_patroli LIKE ? LIMIT 8`;
-        const searchTerm = `%${search}%`;
-
-        const [results] = await db.execute(query, [searchTerm]);
+        const query = `SELECT nomor_patroli FROM patroli LIMIT 8`;
+        const [results] = await db.execute(query);
         const patroliNumbers = results.map(row => ({ label: row.nomor_patroli, value: row.nomor_patroli }));
 
         res.json(patroliNumbers);
@@ -143,6 +137,5 @@ router.get('/patroli/search', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 module.exports = router;
