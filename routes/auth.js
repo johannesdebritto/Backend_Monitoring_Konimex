@@ -121,15 +121,18 @@ router.get('/anggota/search', async(req, res) => {
 });
 
 
-// Endpoint untuk mencari unit_kerja berdasarkan ID
+// Endpoint untuk mencari unit_kerja berdasarkan ID Unit Kerja
 router.get('/unit_kerja/search', async(req, res) => {
-    const { id } = req.query;
-    if (!id) {
-        return res.status(400).json({ message: "ID diperlukan" });
+    const { id_unit_kerja } = req.query; // Ganti dari 'id' ke 'id_unit_kerja'
+
+    if (!id_unit_kerja) {
+        return res.status(400).json({ message: "ID Unit Kerja diperlukan" });
     }
 
     try {
-        const [rows] = await db.execute('SELECT nama_unit FROM unit_kerja WHERE id = ?', [id]);
+        const [rows] = await db.execute(
+            'SELECT nama_unit FROM unit_kerja WHERE id_unit_kerja = ?', [id_unit_kerja]
+        );
 
         if (rows.length === 0) {
             return res.status(404).json({ message: "Unit tidak ditemukan" });
@@ -141,15 +144,19 @@ router.get('/unit_kerja/search', async(req, res) => {
     }
 });
 
-// Endpoint untuk mencari patroli berdasarkan ID
+
+// Endpoint untuk mencari patroli berdasarkan ID Patroli
 router.get('/patroli/search', async(req, res) => {
-    const { id } = req.query;
-    if (!id) {
-        return res.status(400).json({ message: "ID diperlukan" });
+    const { id_patroli } = req.query; // Ganti dari 'id' ke 'id_patroli'
+
+    if (!id_patroli) {
+        return res.status(400).json({ message: "ID Patroli diperlukan" });
     }
 
     try {
-        const [rows] = await db.execute('SELECT nomor_patroli FROM patroli WHERE id = ?', [id]);
+        const [rows] = await db.execute(
+            'SELECT nomor_patroli FROM patroli WHERE id_patroli = ?', [id_patroli]
+        );
 
         if (rows.length === 0) {
             return res.status(404).json({ message: "Patroli tidak ditemukan" });
@@ -160,5 +167,6 @@ router.get('/patroli/search', async(req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan", error: error.message });
     }
 });
+
 
 module.exports = router;
