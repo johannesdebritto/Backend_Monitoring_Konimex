@@ -121,52 +121,44 @@ router.get('/anggota/search', async(req, res) => {
 });
 
 
-// Endpoint untuk mencari unit_kerja berdasarkan ID Unit Kerja
+// Autocomplete Nama Unit Kerja
 router.get('/unit_kerja/search', async(req, res) => {
-    const { id_unit_kerja } = req.query; // Ganti dari 'id' ke 'id_unit_kerja'
-
-    if (!id_unit_kerja) {
-        return res.status(400).json({ message: "ID Unit Kerja diperlukan" });
-    }
-
     try {
-        const [rows] = await db.execute(
-            'SELECT nama_unit FROM unit_kerja WHERE id_unit_kerja = ?', [id_unit_kerja]
-        );
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: "Unit tidak ditemukan" });
+        const search = req.query.q;
+        if (!search) {
+            return res.status(400).json({ message: 'Query pencarian tidak boleh kosong' });
         }
 
-        res.json(rows[0]); // Kirim hasilnya
-    } catch (error) {
-        res.status(500).json({ message: "Terjadi kesalahan", error: error.message });
+        const query = `SELECT nama_unit FROM unit_kerja WHERE nama_unit LIKE ? LIMIT 8`;
+        const searchTerm = `%${search}%`;
+
+        const [results] = await db.execute(query, [searchTerm]);
+        const unitNames = results.map(row => row.nama_unit); // Ambil hanya nama_unit
+        res.json(unitNames);
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
 
-
-// Endpoint untuk mencari patroli berdasarkan ID Patroli
+// Autocomplete Nomor Patroli
 router.get('/patroli/search', async(req, res) => {
-    const { id_patroli } = req.query; // Ganti dari 'id' ke 'id_patroli'
-
-    if (!id_patroli) {
-        return res.status(400).json({ message: "ID Patroli diperlukan" });
-    }
-
     try {
-        const [rows] = await db.execute(
-            'SELECT nomor_patroli FROM patroli WHERE id_patroli = ?', [id_patroli]
-        );
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: "Patroli tidak ditemukan" });
+        const search = req.query.q;
+        if (!search) {
+            return res.status(400).json({ message: 'Query pencarian tidak boleh kosong' });
         }
 
-        res.json(rows[0]); // Kirim hasilnya
-    } catch (error) {
-        res.status(500).json({ message: "Terjadi kesalahan", error: error.message });
+        const query = `SELECT nomor_patroli FROM patroli WHERE nomor_patroli LIKE ? LIMIT 8`;
+        const searchTerm = `%${search}%`;
+
+        const [results] = await db.execute(query, [searchTerm]);
+        const patroliNumbers = results.map(row => row.nomor_patroli); // Ambil hanya nomor_patroli
+        res.json(patroliNumbers);
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 module.exports = router;
