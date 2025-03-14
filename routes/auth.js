@@ -116,9 +116,11 @@ router.get('/unit_kerja/list', async(req, res) => {
     try {
         const query = `SELECT nama_unit FROM unit_kerja LIMIT 8`;
         const [results] = await db.execute(query);
-        const unitNames = results.map(row => ({ label: row.nama_unit, value: row.nama_unit }));
 
-        res.json(unitNames);
+        // Mengubah hasil query menjadi array string saja
+        const unitNames = results.map(row => row.nama_unit);
+
+        res.json(unitNames); // Mengirimkan array string langsung
     } catch (err) {
         console.error('Database error:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
@@ -129,9 +131,11 @@ router.get('/patroli/list', async(req, res) => {
     try {
         const query = `SELECT nomor_patroli FROM patroli LIMIT 8`;
         const [results] = await db.execute(query);
-        const patroliNumbers = results.map(row => ({ label: row.nomor_patroli, value: row.nomor_patroli }));
 
-        res.json(patroliNumbers);
+        // Mengubah hasil query menjadi array string saja
+        const patroliNumbers = results.map(row => row.nomor_patroli);
+
+        res.json(patroliNumbers); // Mengirimkan array string langsung
     } catch (err) {
         console.error('Database error:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
