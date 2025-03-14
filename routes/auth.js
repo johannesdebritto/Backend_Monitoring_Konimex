@@ -120,4 +120,45 @@ router.get('/anggota/search', async(req, res) => {
     }
 });
 
+
+// Endpoint untuk mencari unit_kerja berdasarkan ID
+router.get('/unit_kerja/search', async(req, res) => {
+    const { id } = req.query;
+    if (!id) {
+        return res.status(400).json({ message: "ID diperlukan" });
+    }
+
+    try {
+        const [rows] = await db.execute('SELECT nama_unit FROM unit_kerja WHERE id = ?', [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Unit tidak ditemukan" });
+        }
+
+        res.json(rows[0]); // Kirim hasilnya
+    } catch (error) {
+        res.status(500).json({ message: "Terjadi kesalahan", error: error.message });
+    }
+});
+
+// Endpoint untuk mencari patroli berdasarkan ID
+router.get('/patroli/search', async(req, res) => {
+    const { id } = req.query;
+    if (!id) {
+        return res.status(400).json({ message: "ID diperlukan" });
+    }
+
+    try {
+        const [rows] = await db.execute('SELECT nomor_patroli FROM patroli WHERE id = ?', [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Patroli tidak ditemukan" });
+        }
+
+        res.json(rows[0]); // Kirim hasilnya
+    } catch (error) {
+        res.status(500).json({ message: "Terjadi kesalahan", error: error.message });
+    }
+});
+
 module.exports = router;
