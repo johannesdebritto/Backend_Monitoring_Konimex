@@ -80,19 +80,11 @@ router.post('/login', async(req, res) => {
 });
 
 
-// Autocomplete Email Unit
-router.get('/unit/search', async(req, res) => {
+router.get('/unit/list', async(req, res) => {
     try {
-        const search = req.query.q;
-        if (!search) {
-            return res.status(400).json({ message: 'Query pencarian tidak boleh kosong' });
-        }
-
-        const query = `SELECT email FROM unit WHERE email LIKE ? LIMIT 10`;
-        const searchTerm = `%${search}%`;
-
-        const [results] = await db.execute(query, [searchTerm]);
-        const emails = results.map(row => row.email); // Ambil hanya email
+        const query = `SELECT email FROM unit LIMIT 5`; // Ambil semua email unit (bisa diubah batasnya)
+        const [results] = await db.execute(query);
+        const emails = results.map(row => row.email);
         res.json(emails);
     } catch (err) {
         console.error('Database error:', err);
