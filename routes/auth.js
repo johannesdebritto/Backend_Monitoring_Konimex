@@ -91,7 +91,7 @@ router.get('/unit/list', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-///
+
 // Autocomplete Nama Anggota
 router.get('/anggota/search', async(req, res) => {
     try {
@@ -112,20 +112,15 @@ router.get('/anggota/search', async(req, res) => {
     }
 });
 
-
-// Autocomplete Nama Unit Kerja
 router.get('/unit_kerja/search', async(req, res) => {
     try {
-        const search = req.query.q;
-        if (!search) {
-            return res.status(400).json({ message: 'Query pencarian tidak boleh kosong' });
-        }
-
+        const search = req.query.q || '';
         const query = `SELECT nama_unit FROM unit_kerja WHERE nama_unit LIKE ? LIMIT 8`;
         const searchTerm = `%${search}%`;
 
         const [results] = await db.execute(query, [searchTerm]);
-        const unitNames = results.map(row => row.nama_unit); // Ambil hanya nama_unit
+        const unitNames = results.map(row => ({ label: row.nama_unit, value: row.nama_unit }));
+
         res.json(unitNames);
     } catch (err) {
         console.error('Database error:', err);
@@ -133,24 +128,21 @@ router.get('/unit_kerja/search', async(req, res) => {
     }
 });
 
-// Autocomplete Nomor Patroli
 router.get('/patroli/search', async(req, res) => {
     try {
-        const search = req.query.q;
-        if (!search) {
-            return res.status(400).json({ message: 'Query pencarian tidak boleh kosong' });
-        }
-
+        const search = req.query.q || '';
         const query = `SELECT nomor_patroli FROM patroli WHERE nomor_patroli LIKE ? LIMIT 8`;
         const searchTerm = `%${search}%`;
 
         const [results] = await db.execute(query, [searchTerm]);
-        const patroliNumbers = results.map(row => row.nomor_patroli); // Ambil hanya nomor_patroli
+        const patroliNumbers = results.map(row => ({ label: row.nomor_patroli, value: row.nomor_patroli }));
+
         res.json(patroliNumbers);
     } catch (err) {
         console.error('Database error:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 module.exports = router;
