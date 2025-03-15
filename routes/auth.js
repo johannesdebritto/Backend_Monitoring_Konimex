@@ -159,7 +159,7 @@ router.get('/anggota/search', async(req, res) => {
             return res.status(400).json({ message: 'Query pencarian tidak boleh kosong' });
         }
 
-        const query = `SELECT nama_anggota FROM anggota WHERE nama_anggota LIKE ? LIMIT 8`;
+        const query = `SELECT nama_anggota FROM anggota WHERE nama_anggota LIKE ? LIMIT 3`;
         const searchTerm = `%${search}%`;
 
         const [results] = await db.execute(query, [searchTerm]);
