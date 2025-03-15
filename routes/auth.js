@@ -79,6 +79,35 @@ router.post('/login', async(req, res) => {
     }
 });
 
+router.get('/unit/validate', async(req, res) => {
+    const { email, password } = req.query; // Ambil email & password dari URL
+
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email dan Password wajib diisi" });
+    }
+
+    try {
+        const query = `SELECT password_gedung FROM unit WHERE email = ?`;
+        const [results] = await db.execute(query, [email]);
+
+        if (results.length === 0) {
+            return res.status(401).json({ message: "Email atau Password salah" });
+        }
+
+        const storedPassword = results[0].password_gedung;
+
+        if (storedPassword !== password) {
+            return res.status(401).json({ message: "Email atau Password salah" });
+        }
+
+        res.json({ message: "Valid" });
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
+    }
+});
+
+
 
 router.get('/unit/list', async(req, res) => {
     try {
