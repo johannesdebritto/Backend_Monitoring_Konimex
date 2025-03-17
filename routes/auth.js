@@ -22,7 +22,7 @@ router.post('/login', async(req, res) => {
 
         const { id_unit, nama_unit } = unitResults[0];
 
-        const queryUnitKerja = 'SELECT id_unit_kerja FROM unit_kerja WHERE nama_unit_kerja = ? LIMIT 1';
+        const queryUnitKerja = 'SELECT id_unit_kerja FROM unit_kerja WHERE nama_unit = ? LIMIT 1';
         const [unitKerjaResult] = await db.execute(queryUnitKerja, [unit_kerja]);
 
         if (unitKerjaResult.length === 0) {
