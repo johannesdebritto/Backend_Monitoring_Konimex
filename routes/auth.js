@@ -90,11 +90,10 @@ router.post('/login', async(req, res) => {
             const sekarang = new Date();
             const hari = sekarang.toLocaleDateString('id-ID', { weekday: 'long' });
             const tanggal = sekarang.toISOString().split('T')[0];
-            const waktu_mulai = sekarang.toTimeString().split(' ')[0];
 
             const insertRiwayat = `
-                INSERT INTO riwayat (id_unit, id_anggota_1, id_anggota_2, id_patroli, id_unit_kerja, hari, tanggal, waktu_mulai) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO riwayat (id_unit, id_anggota_1, id_anggota_2, id_patroli, id_unit_kerja, hari, tanggal) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
             const [result] = await db.execute(insertRiwayat, [
                 id_unit,
@@ -103,8 +102,7 @@ router.post('/login', async(req, res) => {
                 id_patroli,
                 id_unit_kerja,
                 hari,
-                tanggal,
-                waktu_mulai
+                tanggal
             ]);
             id_riwayat = result.insertId;
             console.log("Insert ID Riwayat baru:", id_riwayat);
