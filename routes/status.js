@@ -8,7 +8,7 @@ const updateWaktu = async(id_riwayat, tipe, res) => {
         const waktuSekarang = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
         // Menentukan kolom mana yang akan diperbarui
-        const kolomWaktu = tipe === 'dalam' ? 'waktu_selesai_dalam' : 'waktu_selesai_luar';
+        const kolomWaktu = tipe === 'dalam' ? 'waktu_mulai_dalam' : 'waktu_mulai_luar';
         const kolomStatus = tipe === 'dalam' ? 'id_status_dalam' : 'id_status_luar';
 
         // Query untuk update waktu dan status
