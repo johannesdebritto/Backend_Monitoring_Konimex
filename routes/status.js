@@ -3,11 +3,8 @@ const router = express.Router();
 const db = require('../db'); // Import koneksi database
 
 
-// Fungsi untuk mendapatkan waktu saat ini dalam format HH:mm:ss dengan GMT+7
 const getCurrentTime = () => {
-    const date = new Date();
-    date.setHours(date.getHours() + 7); // Tambah 7 jam untuk WIB
-    return date.toTimeString().slice(0, 8); // Format jadi HH:mm:ss
+    return new Date().toTimeString().slice(0, 8); // Format HH:mm:ss tanpa tambah jam
 };
 
 // Fungsi untuk memperbarui waktu dan status berdasarkan tipe (dalam/luar)
