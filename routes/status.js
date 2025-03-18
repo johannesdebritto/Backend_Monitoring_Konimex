@@ -2,10 +2,24 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Import koneksi database
 
+// Fungsi untuk mendapatkan waktu saat ini dalam zona waktu Asia/Jakarta (UTC+7)
+const getCurrentTimeJakarta = () => {
+    return new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    }).format(new Date()).replace(',', '').split('/').reverse().join('-');
+};
+
 // Fungsi untuk memperbarui waktu selesai dan status berdasarkan tipe (dalam/luar)
 const updateWaktu = async(id_riwayat, tipe, res) => {
     try {
-        const waktuSekarang = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const waktuSekarang = getCurrentTimeJakarta();
 
         // Menentukan kolom mana yang akan diperbarui
         const kolomWaktu = tipe === 'dalam' ? 'waktu_mulai_dalam' : 'waktu_mulai_luar';
