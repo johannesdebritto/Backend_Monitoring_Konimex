@@ -2,11 +2,17 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Import koneksi database
 
-// Fungsi untuk mendapatkan tanggal dalam format DD-MM-YYYY
-const getCurrentDate = () => {
+// Fungsi untuk mendapatkan tanggal dalam format DD-MM-YYYY (untuk tampilan)
+const getFormattedDate = () => {
     const now = new Date();
     return `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1)
         .toString().padStart(2, '0')}-${now.getFullYear()}`;
+};
+
+// Fungsi untuk mendapatkan tanggal dalam format YYYY-MM-DD (untuk MySQL)
+const getMySQLDate = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
 };
 
 // Fungsi untuk mendapatkan waktu dalam format HH:mm:ss
@@ -18,7 +24,8 @@ const getCurrentTime = () => {
 router.post('/submit-patroli-dalam', async(req, res) => {
     try {
         const { nama_anggota, bagian, keterangan_masalah, id_status } = req.body;
-        const tanggal = getCurrentDate();
+        const tanggalTampilan = getFormattedDate(); // Format untuk tampilan (DD-MM-YYYY)
+        const tanggalMySQL = getMySQLDate(); // Format untuk MySQL (YYYY-MM-DD)
         const jam = getCurrentTime();
 
         if (!nama_anggota || !id_status) {
@@ -40,9 +47,13 @@ router.post('/submit-patroli-dalam', async(req, res) => {
             INSERT INTO detail_riwayat_dalam (id_anggota, id_status, bagian, keterangan_masalah, tanggal_selesai, jam_selesai)
             VALUES (?, ?, ?, ?, ?, ?)
         `;
-        await db.execute(insertQuery, [id_anggota, id_status, bagian, keterangan_masalah, tanggal, jam]);
+        await db.execute(insertQuery, [id_anggota, id_status, bagian, keterangan_masalah, tanggalMySQL, jam]);
 
-        res.json({ message: 'Data patroli dalam berhasil disimpan' });
+        res.json({
+            message: 'Data patroli dalam berhasil disimpan',
+            tanggal_tampilan: tanggalTampilan, // Kirim balik format DD-MM-YYYY
+            jam: jam
+        });
     } catch (err) {
         console.error('Error saat menyimpan data patroli dalam:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
