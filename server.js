@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth');
 const tugasRoutes = require('./routes/tugas');
 const submitRoutes = require('./routes/submit');
 const statusRoutes = require('./routes/status');
+const tugasdalamRoutes = require('./routes/tugas_dalam');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tugas', tugasRoutes);
+app.use('/api/tugas_dalam', tugasdalamRoutes);
 app.use('/api/submit', submitRoutes);
 app.use('/api/status', statusRoutes);
 

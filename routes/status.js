@@ -14,7 +14,7 @@ const updateWaktu = async(id_riwayat, tipe, res) => {
 
         // Menentukan kolom mana yang akan diperbarui
         const kolomWaktu = tipe === 'dalam' ? 'waktu_mulai_dalam' : 'waktu_mulai_luar';
-        const kolomStatus = tipe === 'dalam' ? 'id_status_dalam' : 'id_status_luar';
+        const kolomStatus = tipe === 'dalam' ? 'patroli_dalam' : 'patroli_luar';
 
         // Query untuk update waktu dan status
         const updateQuery = `
