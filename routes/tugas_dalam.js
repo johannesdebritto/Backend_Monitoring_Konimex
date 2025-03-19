@@ -23,13 +23,13 @@ const getCurrentTime = () => {
 // Endpoint untuk submit patroli dalam
 router.post('/submit-patroli-dalam', async(req, res) => {
     try {
-        const { nama_anggota, bagian, keterangan_masalah, id_status } = req.body;
+        const { id_riwayat, nama_anggota, bagian, keterangan_masalah, id_status } = req.body;
         const tanggalTampilan = getFormattedDate(); // Format untuk tampilan (DD-MM-YYYY)
         const tanggalMySQL = getMySQLDate(); // Format untuk MySQL (YYYY-MM-DD)
         const jam = getCurrentTime();
 
-        if (!nama_anggota || !id_status) {
-            return res.status(400).json({ message: 'Nama anggota dan id_status harus disertakan' });
+        if (!id_riwayat || !nama_anggota || !id_status) {
+            return res.status(400).json({ message: 'ID riwayat, nama anggota, dan id_status harus disertakan' });
         }
 
         // Ambil id_anggota berdasarkan nama_anggota
@@ -42,15 +42,16 @@ router.post('/submit-patroli-dalam', async(req, res) => {
 
         const id_anggota = anggotaResult[0].id_anggota;
 
-        // Simpan ke tabel detail_riwayat_dalam
+        // Simpan ke tabel detail_riwayat_dalam dengan menyertakan id_riwayat
         const insertQuery = `
-            INSERT INTO detail_riwayat_dalam (id_anggota, id_status, bagian, keterangan_masalah, tanggal_selesai, jam_selesai)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO detail_riwayat_dalam (id_riwayat, id_anggota, id_status, bagian, keterangan_masalah, tanggal_selesai, jam_selesai)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
-        await db.execute(insertQuery, [id_anggota, id_status, bagian, keterangan_masalah, tanggalMySQL, jam]);
+        await db.execute(insertQuery, [id_riwayat, id_anggota, id_status, bagian, keterangan_masalah, tanggalMySQL, jam]);
 
         res.json({
             message: 'Data patroli dalam berhasil disimpan',
+            id_riwayat,
             tanggal_tampilan: tanggalTampilan, // Kirim balik format DD-MM-YYYY
             jam: jam
         });
