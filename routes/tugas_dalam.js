@@ -117,32 +117,37 @@ router.post('/update-status-dalam', async(req, res) => {
 
     try {
         const waktuSekarang = getCurrentTime();
-        const updateQuery = `
-            UPDATE detail_riwayat_dalam 
-            SET id_status = 2, waktu_selesai_dalam = ?
+
+        // 1️⃣ Update tabel `riwayat`
+        const updateRiwayatQuery = `
+            UPDATE riwayat 
+            SET id_status_dalam = 2, waktu_selesai_dalam = ?
             WHERE id_riwayat = ?
         `;
+        await db.execute(updateRiwayatQuery, [waktuSekarang, id_riwayat]);
 
-        const [result] = await db.execute(updateQuery, [waktuSekarang, id_riwayat]);
+        // 2️⃣ Update tabel `detail_riwayat_dalam`
+        const updateDetailQuery = `
+            UPDATE detail_riwayat_dalam 
+            SET id_status = 2
+            WHERE id_riwayat = ?
+        `;
+        await db.execute(updateDetailQuery, [id_riwayat]);
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'ID Riwayat tidak ditemukan' });
-        }
-
-        console.log(`Update status dalam selesai untuk ID Riwayat ${id_riwayat} pada ${waktuSekarang}`);
+        console.log(`✅ Update berhasil untuk ID Riwayat ${id_riwayat} pada ${waktuSekarang}`);
 
         return res.json({
             message: 'Status dalam berhasil diperbarui',
             id_riwayat,
-            id_status: 2,
+            id_status_dalam: 2,
             waktu_selesai_dalam: waktuSekarang
         });
+
     } catch (err) {
-        console.error('Database error:', err);
+        console.error('❌ Database error:', err);
         return res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 // Endpoint untuk mendapatkan jumlah masalah berdasarkan id_riwayat
 router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
