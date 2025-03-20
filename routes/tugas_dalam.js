@@ -140,4 +140,24 @@ router.post('/update-status-dalam', async(req, res) => {
         return res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
+
+// Endpoint untuk mendapatkan jumlah masalah berdasarkan id_riwayat
+router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
+    try {
+        const { id_riwayat } = req.params;
+        const query = `
+            SELECT COUNT(*) AS jumlah_masalah 
+            FROM detail_riwayat_dalam 
+            WHERE id_riwayat = ?
+        `;
+        const [results] = await db.execute(query, [id_riwayat]);
+
+        res.json({ jumlah_masalah: results[0].jumlah_masalah });
+    } catch (err) {
+        console.error('Error saat mengambil jumlah masalah:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
+    }
+});
+
 module.exports = router;
