@@ -148,7 +148,7 @@ router.post('/update-status-dalam', async(req, res) => {
         return res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
+///
 // Endpoint untuk mendapatkan jumlah masalah berdasarkan id_riwayat
 router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
     try {
@@ -164,6 +164,35 @@ router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
     } catch (err) {
         console.error('Error saat mengambil jumlah masalah:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
+    }
+});
+
+
+router.get('/riwayat/:id_riwayat', async(req, res) => {
+    console.log("GET /api/riwayat/:id_riwayat diakses!");
+    const { id_riwayat } = req.params;
+
+    if (!id_riwayat) {
+        return res.status(400).json({ message: 'ID Riwayat harus diisi' });
+    }
+
+    try {
+        const query = `
+            SELECT bagian, keterangan_masalah, tanggal 
+            FROM riwayat 
+            WHERE id_riwayat = ?
+        `;
+        const [rows] = await db.execute(query, [id_riwayat]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
+        }
+
+        return res.json(rows[0]);
+
+    } catch (err) {
+        console.error('❌ Database error:', err);
+        return res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
 
