@@ -86,17 +86,20 @@ router.post('/submit-patroli-dalam', async(req, res) => {
     }
 });
 
-// Endpoint untuk mendapatkan daftar patroli dalam
-router.get('/patroli-dalam', async(req, res) => {
+// Endpoint untuk mendapatkan daftar patroli dalam berdasarkan id_riwayat
+router.get('/patroli-dalam/:id_riwayat', async(req, res) => {
     try {
+        const { id_riwayat } = req.params; // Ambil id_riwayat dari URL
+
         const query = `
             SELECT bagian, keterangan_masalah, 
                    DATE_FORMAT(tanggal_selesai, '%d-%m-%Y') AS tanggal_selesai, 
                    jam_selesai
             FROM detail_riwayat_dalam
+            WHERE id_riwayat = ?
             ORDER BY id_rekap DESC
         `;
-        const [results] = await db.execute(query);
+        const [results] = await db.execute(query, [id_riwayat]);
 
         res.json(results);
     } catch (err) {
