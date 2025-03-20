@@ -119,7 +119,7 @@ router.post('/update-status-dalam', async(req, res) => {
         const waktuSekarang = getCurrentTime();
         const updateQuery = `
             UPDATE detail_riwayat_dalam 
-            SET id_status_dalam = 2, waktu_selesai_dalam = ?
+            SET id_status = 2, waktu_selesai_dalam = ?
             WHERE id_riwayat = ?
         `;
 
@@ -134,7 +134,7 @@ router.post('/update-status-dalam', async(req, res) => {
         return res.json({
             message: 'Status dalam berhasil diperbarui',
             id_riwayat,
-            id_status_dalam: 2,
+            id_status: 2,
             waktu_selesai_dalam: waktuSekarang
         });
     } catch (err) {
@@ -142,6 +142,7 @@ router.post('/update-status-dalam', async(req, res) => {
         return res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 // Endpoint untuk mendapatkan jumlah masalah berdasarkan id_riwayat
 router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
