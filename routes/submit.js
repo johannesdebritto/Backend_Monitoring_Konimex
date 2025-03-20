@@ -46,8 +46,6 @@ router.post('/', async(req, res) => {
     }
 });
 
-
-
 router.get('/unit/:id_unit', async(req, res) => {
     const { id_unit } = req.params;
 

@@ -177,7 +177,7 @@ router.get('/riwayat/:id_riwayat', async(req, res) => {
 
     try {
         const query = `
-            SELECT bagian, keterangan_masalah, waktu, tanggal 
+            SELECT bagian, keterangan_masalah, jam_selesai, tanggal_selesai 
             FROM detail_riwayat_dalam 
             WHERE id_riwayat = ?
         `;
