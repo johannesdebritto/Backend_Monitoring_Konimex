@@ -20,16 +20,23 @@ const getCurrentTime = () => {
     return new Date().toTimeString().slice(0, 8);
 };
 
-// Endpoint untuk submit patroli dalam
 router.post('/submit-patroli-dalam', async(req, res) => {
     try {
         const { id_riwayat, nama_anggota, bagian, keterangan_masalah, id_status } = req.body;
-        const tanggalTampilan = getFormattedDate(); // Format untuk tampilan (DD-MM-YYYY)
-        const tanggalMySQL = getMySQLDate(); // Format untuk MySQL (YYYY-MM-DD)
+        const tanggalTampilan = getFormattedDate(); // Format DD-MM-YYYY
+        const tanggalMySQL = getMySQLDate(); // Format YYYY-MM-DD
         const jam = getCurrentTime();
+
+        console.log("Data diterima dari Flutter:", req.body);
 
         if (!id_riwayat || !nama_anggota || !id_status) {
             return res.status(400).json({ message: 'ID riwayat, nama anggota, dan id_status harus disertakan' });
+        }
+
+        // Pastikan id_riwayat berupa integer
+        const id_riwayat_int = parseInt(id_riwayat, 10);
+        if (isNaN(id_riwayat_int)) {
+            return res.status(400).json({ message: 'ID riwayat tidak valid' });
         }
 
         // Ambil id_anggota berdasarkan nama_anggota
@@ -42,22 +49,40 @@ router.post('/submit-patroli-dalam', async(req, res) => {
 
         const id_anggota = anggotaResult[0].id_anggota;
 
-        // Simpan ke tabel detail_riwayat_dalam dengan menyertakan id_riwayat
+        console.log("ID Anggota ditemukan:", id_anggota);
+
+        // Simpan ke tabel detail_riwayat_dalam
         const insertQuery = `
-            INSERT INTO detail_riwayat_dalam (id_riwayat, id_anggota, id_status, bagian, keterangan_masalah, tanggal_selesai, jam_selesai)
+            INSERT INTO detail_riwayat_dalam 
+            (id_riwayat, id_anggota, id_status, bagian, keterangan_masalah, tanggal_selesai, jam_selesai) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
-        await db.execute(insertQuery, [id_riwayat, id_anggota, id_status, bagian, keterangan_masalah, tanggalMySQL, jam]);
+
+        console.log("Data yang akan disimpan:", {
+            id_riwayat: id_riwayat_int,
+            id_anggota,
+            id_status,
+            bagian,
+            keterangan_masalah,
+            tanggalMySQL,
+            jam
+        });
+
+        const [result] = await db.execute(insertQuery, [
+            id_riwayat_int, id_anggota, id_status, bagian, keterangan_masalah, tanggalMySQL, jam
+        ]);
+
+        console.log("Query berhasil dieksekusi:", result);
 
         res.json({
             message: 'Data patroli dalam berhasil disimpan',
-            id_riwayat,
-            tanggal_tampilan: tanggalTampilan, // Kirim balik format DD-MM-YYYY
+            id_riwayat: id_riwayat_int,
+            tanggal_tampilan: tanggalTampilan,
             jam: jam
         });
     } catch (err) {
         console.error('Error saat menyimpan data patroli dalam:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
     }
 });
 
