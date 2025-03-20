@@ -89,8 +89,7 @@ router.post('/submit-patroli-dalam', async(req, res) => {
 // Endpoint untuk mendapatkan daftar patroli dalam berdasarkan id_riwayat
 router.get('/patroli-dalam/:id_riwayat', async(req, res) => {
     try {
-        const { id_riwayat } = req.params; // Ambil id_riwayat dari URL
-
+        const { id_riwayat } = req.params;
         const query = `
             SELECT bagian, keterangan_masalah, 
                    DATE_FORMAT(tanggal_selesai, '%d-%m-%Y') AS tanggal_selesai, 
@@ -107,7 +106,6 @@ router.get('/patroli-dalam/:id_riwayat', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 
 // Endpoint untuk update id_status_dalam dan waktu_selesai_dalam
