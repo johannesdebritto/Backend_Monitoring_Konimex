@@ -16,7 +16,7 @@ const getCurrentDateTime = () => {
 const insertRiwayat = async(id_riwayat, tipe, data, res) => {
     try {
         const { waktu, tanggal, hari } = getCurrentDateTime();
-        const tableName = tipe === 'dalam' ? 'riwayatdalam' : 'riwayatluar';
+        const tableName = tipe === 'dalam' ? 'riwayat_dalam' : 'riwayat_luar';
         const waktuKolom = tipe === 'dalam' ? 'waktu_mulai_dalam' : 'waktu_mulai_luar';
         const statusKolom = tipe === 'dalam' ? 'id_status_dalam' : 'id_status_luar';
 
