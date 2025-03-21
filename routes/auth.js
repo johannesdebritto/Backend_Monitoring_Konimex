@@ -40,8 +40,6 @@ router.post('/login', async(req, res) => {
     }
 });
 
-
-
 router.get('/unit/validate', async(req, res) => {
     const { email, password } = req.query; // Ambil email & password dari URL
 
