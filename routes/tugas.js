@@ -71,11 +71,11 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
         }
         const id_anggota = anggotaResult[0].id_anggota;
 
-        const updateQuery = `UPDATE detail_riwayat SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ? WHERE id_tugas = ?`;
+        const updateQuery = `UPDATE detail_riwayat_luar SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ? WHERE id_tugas = ?`;
         const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, id_anggota, idTugas]);
 
         if (updateResults.affectedRows === 0) {
-            const insertQuery = `INSERT INTO detail_riwayat (id_tugas, id_status, tanggal_selesai, jam_selesai, id_anggota) VALUES (?, ?, ?, ?, ?)`;
+            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_selesai, jam_selesai, id_anggota) VALUES (?, ?, ?, ?, ?)`;
             await db.execute(insertQuery, [idTugas, idStatus, tanggal, jam, id_anggota]);
         }
 
@@ -104,11 +104,11 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
         }
         const id_anggota = anggotaResult[0].id_anggota;
 
-        const updateQuery = `UPDATE detail_riwayat SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), id_anggota = ? WHERE id_tugas = ?`;
+        const updateQuery = `UPDATE detail_riwayat_luar SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), id_anggota = ? WHERE id_tugas = ?`;
         const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas]);
 
         if (updateResults.affectedRows === 0) {
-            const insertQuery = `INSERT INTO detail_riwayat (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota) VALUES (?, ?, ?, ?, ?, ?)`;
+            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota) VALUES (?, ?, ?, ?, ?, ?)`;
             await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota]);
         }
 
@@ -123,7 +123,7 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
 router.get('/rekap/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const query = `SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah FROM detail_riwayat WHERE id_tugas = ?`;
+        const query = `SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah FROM detail_riwayat_luar WHERE id_tugas = ?`;
 
         const [results] = await db.execute(query, [idTugas]);
         if (results.length > 0) {
@@ -138,6 +138,7 @@ router.get('/rekap/:id_tugas', async(req, res) => {
 });
 
 
+
 router.get('/detail_riwayat/:id_unit', async(req, res) => {
     try {
         const idUnit = req.params.id_unit;
@@ -147,7 +148,7 @@ router.get('/detail_riwayat/:id_unit', async(req, res) => {
                    dr.keterangan_masalah, 
                    DATE_FORMAT(dr.tanggal_selesai, '%Y-%m-%d') AS tanggal_selesai,
                    TIME_FORMAT(dr.jam_selesai, '%H:%i:%s') AS jam_selesai
-            FROM detail_riwayat dr
+            FROM detail_riwayat_luar dr
             JOIN tugas_unit tu ON dr.id_tugas = tu.id_tugas
             JOIN status s ON dr.id_status = s.id_status
             WHERE tu.id_unit = ?
@@ -167,14 +168,14 @@ router.get('/detail_riwayat/:id_unit', async(req, res) => {
     }
 });
 
-// Endpoint untuk mendapatkan id_status berdasarkan id_unit
+// Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
 router.get('/status_data/:id_unit', async(req, res) => {
     try {
         const { id_unit } = req.params;
-        const sql = 'SELECT id_status FROM riwayat WHERE id_unit = ?';
+        const sql = 'SELECT id_status_luar FROM riwayat WHERE id_unit = ?';
         const [rows] = await db.execute(sql, [id_unit]);
 
-        if (rows.length > 0 && rows.some(row => row.id_status == 2)) {
+        if (rows.length > 0 && rows.some(row => row.id_status_luar == 2)) {
             res.json({ success: true, message: 'Success' });
         } else {
             res.json({ success: false, message: 'Gak Ada Kocak!!!' });
