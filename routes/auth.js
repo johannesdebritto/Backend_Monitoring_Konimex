@@ -6,13 +6,14 @@ router.post('/login', async(req, res) => {
     console.log("POST /api/auth/login diakses!");
     console.log("Body yang diterima:", req.body);
 
-    const { email, password, anggota1, anggota2, patroli, unit_kerja } = req.body;
+    const { email, password } = req.body;
 
-    if (!email || !password || !anggota1 || !patroli || !unit_kerja) {
-        return res.status(400).json({ message: 'Email, password, anggota1, patroli, dan unit kerja harus diisi' });
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email dan password harus diisi' });
     }
 
     try {
+        // Cek email & password di database
         const queryUnit = 'SELECT id_unit, nama_unit FROM unit WHERE email = ? AND password_gedung = ?';
         const [unitResults] = await db.execute(queryUnit, [email, password]);
 
@@ -22,94 +23,8 @@ router.post('/login', async(req, res) => {
 
         const { id_unit, nama_unit } = unitResults[0];
 
-        const queryUnitKerja = 'SELECT id_unit_kerja FROM unit_kerja WHERE nama_unit = ? LIMIT 1';
-        const [unitKerjaResult] = await db.execute(queryUnitKerja, [unit_kerja]);
-
-        if (unitKerjaResult.length === 0) {
-            return res.status(404).json({ message: 'Unit kerja tidak ditemukan' });
-        }
-
-        const id_unit_kerja = unitKerjaResult[0].id_unit_kerja;
-        console.log("Dapat ID Unit Kerja:", id_unit_kerja);
-
-        const queryAnggota1 = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
-        const [anggota1Result] = await db.execute(queryAnggota1, [anggota1]);
-
-        if (anggota1Result.length === 0) {
-            return res.status(404).json({ message: 'Anggota1 tidak ditemukan' });
-        }
-
-        const id_anggota_1 = anggota1Result[0].id_anggota;
-        console.log("Dapat ID Anggota1:", id_anggota_1);
-
-        let id_anggota_2 = null;
-        if (anggota2 && anggota2.trim() !== "") {
-            const queryAnggota2 = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
-            const [anggota2Result] = await db.execute(queryAnggota2, [anggota2]);
-
-            if (anggota2Result.length === 0) {
-                return res.status(404).json({ message: 'Anggota2 tidak ditemukan' });
-            }
-
-            id_anggota_2 = anggota2Result[0].id_anggota;
-            console.log("Dapat ID Anggota2:", id_anggota_2);
-        } else {
-            console.log("Anggota2 kosong, lanjut tanpa data ini.");
-        }
-
-        const queryPatroli = 'SELECT id_patroli FROM patroli WHERE nomor_patroli = ? LIMIT 1';
-        const [patroliResult] = await db.execute(queryPatroli, [patroli]);
-
-        if (patroliResult.length === 0) {
-            return res.status(404).json({ message: 'Nomor patroli tidak ditemukan' });
-        }
-
-        const id_patroli = patroliResult[0].id_patroli;
-        console.log("Dapat ID Patroli:", id_patroli);
-
-        const queryRiwayat = `
-            SELECT id_riwayat FROM riwayat 
-            WHERE id_unit = ? 
-            ORDER BY id_riwayat DESC LIMIT 1
-        `;
-        const [riwayatResult] = await db.execute(queryRiwayat, [id_unit]);
-
-        let id_riwayat;
-
-        if (riwayatResult.length > 0) {
-            id_riwayat = riwayatResult[0].id_riwayat;
-            console.log("Pakai ID Riwayat lama:", id_riwayat);
-
-            const updateRiwayat = `
-                UPDATE riwayat 
-                SET id_anggota_1 = ?, id_anggota_2 = ?, id_patroli = ?, id_unit_kerja = ? 
-                WHERE id_riwayat = ? AND id_anggota_1 IS NULL
-            `;
-            await db.execute(updateRiwayat, [id_anggota_1, id_anggota_2, id_patroli, id_unit_kerja, id_riwayat]);
-        } else {
-            const sekarang = new Date();
-            const hari = sekarang.toLocaleDateString('id-ID', { weekday: 'long' });
-            const tanggal = sekarang.toISOString().split('T')[0];
-
-            const insertRiwayat = `
-                INSERT INTO riwayat (id_unit, id_anggota_1, id_anggota_2, id_patroli, id_unit_kerja, hari, tanggal) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
-            const [result] = await db.execute(insertRiwayat, [
-                id_unit,
-                id_anggota_1,
-                id_anggota_2, // Bisa NULL kalau kosong
-                id_patroli,
-                id_unit_kerja,
-                hari,
-                tanggal
-            ]);
-            id_riwayat = result.insertId;
-            console.log("Insert ID Riwayat baru:", id_riwayat);
-        }
-
         return res.json({
-            message: riwayatResult.length > 0 ? 'Login berhasil (Pakai riwayat lama)' : 'Login berhasil (Riwayat baru dibuat)',
+            message: 'Login berhasil',
             id_unit,
             nama_unit,
             id_unit_kerja,
@@ -118,11 +33,13 @@ router.post('/login', async(req, res) => {
             anggota2: anggota2 || null,
             id_patroli
         });
+
     } catch (err) {
         console.error('Database error:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 
 router.get('/unit/validate', async(req, res) => {
