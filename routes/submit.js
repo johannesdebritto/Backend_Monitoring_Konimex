@@ -36,7 +36,7 @@ router.post('/', async(req, res) => {
 
         // Semua tugas sudah selesai, update waktu_selesai dan id_status di riwayat
         await db.execute(
-            'UPDATE riwayat SET waktu_selesai = ?, id_status = 2 WHERE id_riwayat = ?', [waktu_wib, id_riwayat]
+            'UPDATE riwayat SET waktu_selesai_luar = ?, id_status_luar = 2 WHERE id_riwayat = ?', [waktu_wib, id_riwayat]
         );
 
         res.json({ message: 'Tugas berhasil disubmit!' });
