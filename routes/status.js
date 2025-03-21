@@ -12,13 +12,16 @@ const getCurrentDateTime = () => {
     };
 };
 
-// Fungsi umum untuk memasukkan data ke riwayat
+// Menambahkan pengecekan pada id_status
 const insertRiwayat = async(id_riwayat, tipe, data, res) => {
     try {
         const { waktu, tanggal, hari } = getCurrentDateTime();
         const tableName = tipe === 'dalam' ? 'riwayat_dalam' : 'riwayat_luar';
         const waktuKolom = tipe === 'dalam' ? 'waktu_mulai_dalam' : 'waktu_mulai_luar';
         const statusKolom = tipe === 'dalam' ? 'id_status_dalam' : 'id_status_luar';
+
+        // Cek jika id_status kosong, set default
+        const status = data.id_status || 1;
 
         // Debugging untuk lihat data sebelum query
         console.log(`Menerima data untuk ${tableName}:`, data);
@@ -36,7 +39,7 @@ const insertRiwayat = async(id_riwayat, tipe, data, res) => {
             data.id_patroli,
             data.id_anggota,
             data.id_unit_kerja,
-            1, // Status di-set ke 1 (belum selesai)
+            status, // Gunakan status yang sudah ditentukan
             waktu,
             tanggal,
             hari
@@ -50,7 +53,7 @@ const insertRiwayat = async(id_riwayat, tipe, data, res) => {
             waktu_mulai: waktu,
             tanggal,
             hari,
-            status: 1
+            status
         });
     } catch (err) {
         console.error('❌ Database error:', err);
