@@ -26,12 +26,7 @@ router.post('/login', async(req, res) => {
         return res.json({
             message: 'Login berhasil',
             id_unit,
-            nama_unit,
-            id_unit_kerja,
-            id_riwayat,
-            anggota1,
-            anggota2: anggota2 || null,
-            id_patroli
+
         });
 
     } catch (err) {
