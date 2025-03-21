@@ -39,7 +39,7 @@ router.post('/login', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
+//
 router.get('/unit/validate', async(req, res) => {
     const { email, password } = req.query; // Ambil email & password dari URL
 
