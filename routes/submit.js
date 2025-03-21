@@ -57,9 +57,9 @@ router.get('/unit/:id_unit', async(req, res) => {
         const [results] = await db.execute(
             `SELECT r.id_riwayat, r.id_unit, u.nama_unit, r.hari, 
                     DATE_FORMAT(CONVERT_TZ(r.tanggal, '+00:00', '+07:00'), '%d-%m-%Y') AS tanggal,  
-                    r.waktu_mulai, r.waktu_selesai, r.id_status, s.nama_status
+                    r.waktu_mulai_luar, r.waktu_selesai_luar, r.id_status_luar, s.nama_status
              FROM riwayat r
-             JOIN status s ON r.id_status = s.id_status
+             JOIN status s ON r.id_status_luar = s.id_status
              JOIN unit u ON r.id_unit = u.id_unit
              WHERE r.id_unit = ?`, [id_unit]
         );
@@ -74,5 +74,6 @@ router.get('/unit/:id_unit', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 module.exports = router;
