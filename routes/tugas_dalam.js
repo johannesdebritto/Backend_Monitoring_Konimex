@@ -148,7 +148,7 @@ router.post('/update-status-dalam', async(req, res) => {
 
         // 1️⃣ Update tabel `riwayat`
         const updateRiwayatQuery = `
-            UPDATE riwayat 
+            UPDATE riwayat_dalam 
             SET id_status_dalam = 2, waktu_selesai_dalam = ?
             WHERE id_riwayat = ?
         `;
