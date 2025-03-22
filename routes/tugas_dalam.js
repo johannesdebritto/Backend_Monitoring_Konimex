@@ -85,33 +85,46 @@ router.post('/submit-patroli-dalam', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
     }
 });
-
-router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
+//ambildata
+router.get('/patroli-dalam/:id_riwayat', async(req, res) => {
     try {
         const { id_riwayat } = req.params;
-        console.log(`🔍 Fetching jumlah masalah untuk id_riwayat: ${id_riwayat}`);
-
         const query = `
-            SELECT COUNT(*) AS jumlah_masalah
+            SELECT bagian, keterangan_masalah, 
+                   DATE_FORMAT(tanggal_selesai, '%d-%m-%Y') AS tanggal_selesai, 
+                   jam_selesai
             FROM detail_riwayat_dalam
-            WHERE id_riwayat = ? AND keterangan_masalah IS NOT NULL
+            WHERE id_riwayat = ?
+            ORDER BY id_rekap DESC
         `;
         const [results] = await db.execute(query, [id_riwayat]);
 
-        console.log("📊 Query results:", results); // <-- Tambahkan ini
+        res.json({ success: true, data: results }); // Tambah success biar Flutter paham
+    } catch (err) {
+        console.error('Error saat mengambil data patroli dalam:', err);
+        res.status(500).json({ success: false, message: 'Terjadi kesalahan server' });
+    }
+});
+//jumlah data
+router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
+    try {
+        const { id_riwayat } = req.params;
+        const query = `
+            SELECT COUNT(*) AS jumlah_masalah 
+            FROM detail_riwayat_dalam 
+            WHERE id_riwayat = ?
+        `;
+        const [results] = await db.execute(query, [id_riwayat]);
 
-        const jumlahMasalah = (results.length > 0 && results[0].jumlah_masalah != null) ?
-            results[0].jumlah_masalah :
-            0;
-
-        console.log("✅ Jumlah masalah:", jumlahMasalah); // <-- Tambahkan ini
+        const jumlahMasalah = results.length > 0 ? results[0].jumlah_masalah : 0;
 
         res.json({ success: true, jumlah_masalah: jumlahMasalah });
     } catch (err) {
-        console.error('❌ Error saat mengambil jumlah masalah:', err);
-        res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server', error: err.message });
+        console.error('Error saat mengambil jumlah masalah:', err);
+        res.status(500).json({ success: false, message: 'Terjadi kesalahan server' });
     }
 });
+
 
 router.post('/update-status-dalam', async(req, res) => {
     console.log("POST /api/status/update-status-dalam diakses!");
@@ -155,23 +168,7 @@ router.post('/update-status-dalam', async(req, res) => {
     }
 });
 ///
-// Endpoint untuk mendapatkan jumlah masalah berdasarkan id_riwayat
-router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
-    try {
-        const { id_riwayat } = req.params;
-        const query = `
-            SELECT COUNT(*) AS jumlah_masalah 
-            FROM detail_riwayat_dalam 
-            WHERE id_riwayat = ?
-        `;
-        const [results] = await db.execute(query, [id_riwayat]);
 
-        res.json({ jumlah_masalah: results[0].jumlah_masalah });
-    } catch (err) {
-        console.error('Error saat mengambil jumlah masalah:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
-    }
-});
 
 router.get('/riwayat/:id_riwayat', async(req, res) => {
     console.log("GET /api/riwayat/:id_riwayat diakses!");
