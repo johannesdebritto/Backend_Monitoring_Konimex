@@ -172,7 +172,7 @@ router.get('/detail_riwayat/:id_unit', async(req, res) => {
 router.get('/status_data/:id_unit', async(req, res) => {
     try {
         const { id_unit } = req.params;
-        const sql = 'SELECT id_status_luar FROM riwayat WHERE id_unit = ?';
+        const sql = 'SELECT id_status_luar FROM riwayat_luar WHERE id_unit = ?';
         const [rows] = await db.execute(sql, [id_unit]);
 
         if (rows.length > 0 && rows.some(row => row.id_status_luar == 2)) {
