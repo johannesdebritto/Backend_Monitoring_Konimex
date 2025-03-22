@@ -86,26 +86,27 @@ router.post('/submit-patroli-dalam', async(req, res) => {
     }
 });
 
-// Endpoint untuk mendapatkan daftar patroli dalam berdasarkan id_riwayat
-router.get('/patroli-dalam/:id_riwayat', async(req, res) => {
+// Endpoint untuk mendapatkan jumlah masalah berdasarkan id_riwayat
+router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
     try {
         const { id_riwayat } = req.params;
         const query = `
-            SELECT bagian, keterangan_masalah, 
-                   DATE_FORMAT(tanggal_selesai, '%d-%m-%Y') AS tanggal_selesai, 
-                   jam_selesai
+            SELECT COUNT(*) AS jumlah_masalah
             FROM detail_riwayat_dalam
-            WHERE id_riwayat = ?
-            ORDER BY id_rekap DESC
+            WHERE id_riwayat = ? AND keterangan_masalah IS NOT NULL
         `;
         const [results] = await db.execute(query, [id_riwayat]);
 
-        res.json(results);
+        // Pastikan hasilnya tidak undefined
+        const jumlahMasalah = results[0] ? .jumlah_masalah ? ? 0;
+
+        res.json({ jumlah_masalah: jumlahMasalah });
     } catch (err) {
-        console.error('Error saat mengambil data patroli dalam:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
+        console.error('Error saat mengambil jumlah masalah:', err);
+        res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
     }
 });
+
 
 router.post('/update-status-dalam', async(req, res) => {
     console.log("POST /api/status/update-status-dalam diakses!");
