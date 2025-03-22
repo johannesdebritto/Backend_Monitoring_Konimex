@@ -97,8 +97,10 @@ router.get('/patroli-dalam/jumlah/:id_riwayat', async(req, res) => {
         `;
         const [results] = await db.execute(query, [id_riwayat]);
 
-        // Pastikan hasilnya tidak undefined
-        const jumlahMasalah = results[0] ? .jumlah_masalah ? ? 0;
+        // Alternatif tanpa optional chaining
+        const jumlahMasalah = (results.length > 0 && results[0].jumlah_masalah != null) ?
+            results[0].jumlah_masalah :
+            0;
 
         res.json({ jumlah_masalah: jumlahMasalah });
     } catch (err) {
