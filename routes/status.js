@@ -19,7 +19,7 @@ const getIdAnggota = async(nama_anggota) => {
     return rows.length > 0 ? rows[0].id_anggota : null;
 };
 
-// Fungsi insert riwayat (dalam/luar)
+// Fungsi insert riwayat (dalam/luar) dan mengembalikan id_riwayat
 const insertRiwayat = async(tipe, data, res) => {
     try {
         const { waktu, tanggal, hari } = getCurrentDateTime();
@@ -27,7 +27,7 @@ const insertRiwayat = async(tipe, data, res) => {
         const waktuKolom = tipe === 'dalam' ? 'waktu_mulai_dalam' : 'waktu_mulai_luar';
         const statusKolom = tipe === 'dalam' ? 'id_status_dalam' : 'id_status_luar';
 
-        const status = data.id_status && data.id_status !== '' ? data.id_status : 1; // Jika kosong, set ke 1
+        const status = data.id_status && data.id_status !== '' ? data.id_status : 1;
 
         // Cek apakah `id_anggota` sudah angka atau masih nama
         let id_anggota = parseInt(data.id_anggota);
@@ -41,26 +41,23 @@ const insertRiwayat = async(tipe, data, res) => {
 
         console.log(`📌 Menyimpan data ke ${tableName} dengan id_anggota: ${id_anggota}`);
 
-        // Insert ke database
+        // Insert ke database & ambil LAST_INSERT_ID()
         const insertQuery = `
             INSERT INTO ${tableName} (id_unit, id_patroli, id_anggota, id_unit_kerja, ${statusKolom}, ${waktuKolom}, tanggal, hari)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         `;
-
-        await db.execute(insertQuery, [
-            data.id_unit,
-            data.id_patroli,
-            id_anggota, // Pakai ID anggota yang sudah dicek
-            data.id_unit_kerja,
-            status,
-            waktu,
-            tanggal,
-            hari
+        const [result] = await db.execute(insertQuery, [
+            data.id_unit, data.id_patroli, id_anggota, data.id_unit_kerja, status, waktu, tanggal, hari
         ]);
 
-        console.log(`✅ Data berhasil ditambahkan ke ${tableName}`);
+        const idRiwayatBaru = result.insertId; // Ambil ID riwayat yang baru dibuat
+        console.log(`✅ Data berhasil ditambahkan ke ${tableName}, id_riwayat: ${idRiwayatBaru}`);
 
-        return res.json({ message: `Waktu ${tipe} berhasil diperbarui` });
+        return res.json({
+            message: `Waktu ${tipe} berhasil diperbarui`,
+            id_riwayat: idRiwayatBaru,
+            tipe: tipe
+        });
     } catch (err) {
         console.error('❌ Database error:', err);
         return res.status(500).json({ message: 'Terjadi kesalahan server' });
@@ -73,12 +70,10 @@ router.post('/update-waktu-dalam', async(req, res) => {
     console.log("📦 Request Body:", req.body);
 
     const { id_unit, id_patroli, id_anggota, id_unit_kerja, id_status } = req.body;
-
     if (!id_unit || !id_patroli || !id_anggota || !id_unit_kerja) {
         console.log("❌ Data tidak lengkap!");
         return res.status(400).json({ message: 'Semua data harus diisi' });
     }
-
     return insertRiwayat('dalam', { id_unit, id_patroli, id_anggota, id_unit_kerja, id_status }, res);
 });
 
@@ -88,12 +83,10 @@ router.post('/update-waktu-luar', async(req, res) => {
     console.log("📦 Request Body:", req.body);
 
     const { id_unit, id_patroli, id_anggota, id_unit_kerja, id_status } = req.body;
-
     if (!id_unit || !id_patroli || !id_anggota || !id_unit_kerja) {
         console.log("❌ Data tidak lengkap!");
         return res.status(400).json({ message: 'Semua data harus diisi' });
     }
-
     return insertRiwayat('luar', { id_unit, id_patroli, id_anggota, id_unit_kerja, id_status }, res);
 });
 
