@@ -137,11 +137,15 @@ router.get('/rekap/:id_tugas', async(req, res) => {
     }
 });
 
-
-
 router.get('/detail_riwayat/:id_unit', async(req, res) => {
     try {
         const idUnit = req.params.id_unit;
+        console.log("🟡 [DEBUG] id_unit diterima di API:", idUnit);
+
+        if (!idUnit) {
+            console.error("❌ [ERROR] id_unit tidak dikirim!");
+            return res.status(400).json({ message: "id_unit tidak boleh kosong!" });
+        }
 
         const query = `
             SELECT dr.id_rekap, dr.id_tugas, tu.nama_tugas, s.nama_status, 
@@ -155,18 +159,23 @@ router.get('/detail_riwayat/:id_unit', async(req, res) => {
             ORDER BY dr.id_rekap ASC
         `;
 
+        console.log("🔵 [DEBUG] Menjalankan query dengan id_unit:", idUnit);
+
         const [results] = await db.execute(query, [idUnit]);
 
         if (results.length > 0) {
+            console.log("✅ [SUCCESS] Data ditemukan:", results);
             res.json(results);
         } else {
-            res.status(404).json({ message: 'Tidak ada riwayat ditemukan untuk unit ini' });
+            console.warn("⚠️ [WARNING] Tidak ada riwayat ditemukan untuk unit ini");
+            res.status(404).json({ message: "Tidak ada riwayat ditemukan untuk unit ini" });
         }
     } catch (err) {
-        console.error('Error mengambil detail riwayat:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
+        console.error("🔥 [ERROR] Terjadi kesalahan saat mengambil detail riwayat:", err);
+        res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 });
+
 
 // Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
 router.get('/status_data/:id_unit', async(req, res) => {
