@@ -12,7 +12,7 @@ router.post('/', async(req, res) => {
     try {
         // Ambil id_unit dari riwayat
         const [unitResult] = await db.execute(
-            'SELECT id_unit FROM riwayat WHERE id_riwayat = ? LIMIT 1', [id_riwayat]
+            'SELECT id_unit FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1', [id_riwayat]
         );
 
         if (unitResult.length === 0) {
@@ -36,7 +36,7 @@ router.post('/', async(req, res) => {
 
         // Semua tugas sudah selesai, update waktu_selesai dan id_status di riwayat
         await db.execute(
-            'UPDATE riwayat SET waktu_selesai_luar = ?, id_status_luar = 2 WHERE id_riwayat = ?', [waktu_wib, id_riwayat]
+            'UPDATE riwayat_luar SET waktu_selesai_luar = ?, id_status_luar = 2 WHERE id_riwayat = ?', [waktu_wib, id_riwayat]
         );
 
         res.json({ message: 'Tugas berhasil disubmit!' });
