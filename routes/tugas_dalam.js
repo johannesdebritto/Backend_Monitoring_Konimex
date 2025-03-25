@@ -179,32 +179,7 @@ router.post('/update-status-dalam', async(req, res) => {
 ///
 
 
-router.get('/riwayat/:id_riwayat', async(req, res) => {
-    console.log("GET /api/riwayat/:id_riwayat diakses!");
-    const { id_riwayat } = req.params;
 
-    if (!id_riwayat) {
-        return res.status(400).json({ message: 'ID Riwayat harus diisi' });
-    }
-
-    try {
-        const query = `
-            SELECT bagian, keterangan_masalah, jam_selesai, tanggal_selesai 
-            FROM detail_riwayat_dalam 
-            WHERE id_riwayat = ?
-        `;
-        const [rows] = await db.execute(query, [id_riwayat]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Data tidak ditemukan' });
-        }
-
-        return res.json(rows); // ✅ Balikin semua data (array)
-    } catch (err) {
-        console.error('❌ Database error:', err);
-        return res.status(500).json({ message: 'Terjadi kesalahan server' });
-    }
-});
 
 
 module.exports = router;
