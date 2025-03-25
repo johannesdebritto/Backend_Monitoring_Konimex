@@ -85,7 +85,7 @@ router.post('/submit-patroli-dalam', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
     }
 });
-//ambildata
+
 // Ambil data patroli dalam
 router.get('/patroli-dalam/:id_riwayat?', async(req, res) => {
     try {
@@ -140,19 +140,19 @@ router.post('/update-status-dalam', async(req, res) => {
     const { id_riwayat } = req.body;
 
     if (!id_riwayat) {
-        return res.status(400).json({ message: 'ID Riwayat harus diisi' });
+        return res.status(400).json({ success: false, message: 'ID Riwayat harus diisi' });
     }
 
     try {
         const waktuSekarang = getCurrentTime();
 
-        // 1️⃣ Update tabel `riwayat`
+        // 1️⃣ Update tabel `riwayat_dalam`
         const updateRiwayatQuery = `
             UPDATE riwayat_dalam 
             SET id_status_dalam = 2, waktu_selesai_dalam = ?
             WHERE id_riwayat = ?
         `;
-        await db.execute(updateRiwayatQuery, [waktuSekarang, id_riwayat]);
+        const [result1] = await db.execute(updateRiwayatQuery, [waktuSekarang, id_riwayat]);
 
         // 2️⃣ Update tabel `detail_riwayat_dalam`
         const updateDetailQuery = `
@@ -160,25 +160,30 @@ router.post('/update-status-dalam', async(req, res) => {
             SET id_status = 2
             WHERE id_riwayat = ?
         `;
-        await db.execute(updateDetailQuery, [id_riwayat]);
+        const [result2] = await db.execute(updateDetailQuery, [id_riwayat]);
 
-        console.log(`✅ Update berhasil untuk ID Riwayat ${id_riwayat} pada ${waktuSekarang}`);
-
-        return res.json({
-            message: 'Status dalam berhasil diperbarui',
-            id_riwayat,
-            id_status_dalam: 2,
-            waktu_selesai_dalam: waktuSekarang
-        });
+        // Cek apakah ada baris yang ter-update
+        if (result1.affectedRows > 0 || result2.affectedRows > 0) {
+            console.log(`✅ Update berhasil untuk ID Riwayat ${id_riwayat} pada ${waktuSekarang}`);
+            return res.json({
+                success: true,
+                message: 'Status dalam berhasil diperbarui',
+                id_riwayat,
+                id_status_dalam: 2,
+                waktu_selesai_dalam: waktuSekarang
+            });
+        } else {
+            return res.status(404).json({
+                success: false,
+                message: 'ID Riwayat tidak ditemukan atau sudah diperbarui sebelumnya'
+            });
+        }
 
     } catch (err) {
         console.error('❌ Database error:', err);
-        return res.status(500).json({ message: 'Terjadi kesalahan server' });
+        return res.status(500).json({ success: false, message: 'Terjadi kesalahan server' });
     }
 });
-///
-
-
 
 
 
