@@ -6,6 +6,7 @@ const tugasRoutes = require('./routes/tugas');
 const submitRoutes = require('./routes/submit');
 const statusRoutes = require('./routes/status');
 const tugasdalamRoutes = require('./routes/tugas_dalam');
+const historyRoutes = require('./routes/history');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use('/api/tugas', tugasRoutes);
 app.use('/api/tugas_dalam', tugasdalamRoutes);
 app.use('/api/submit', submitRoutes);
 app.use('/api/status', statusRoutes);
+app.use('/api/history', historyRoutes);
 
 // Jalankan server
 app.listen(PORT, "0.0.0.0", () => {

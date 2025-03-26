@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Import koneksi database
 
-// Ambil semua data patroli dalam tanpa filter id_riwayat
-router.get('/histroy-patroli-dalam/rekap', async(req, res) => {
+router.get('/api/history/history-patroli-dalam/rekap', async(req, res) => {
     try {
         const query = `
             SELECT id_riwayat, bagian, keterangan_masalah, 
@@ -14,12 +13,13 @@ router.get('/histroy-patroli-dalam/rekap', async(req, res) => {
         `;
         const [results] = await db.execute(query);
 
-        res.json({ success: true, data: results });
+        console.log('📊 Query Results:', results); // Debugging
+
+        res.json({ success: true, data: results }); // Pastikan selalu mengembalikan data
     } catch (err) {
         console.error('❌ Error saat mengambil rekap patroli dalam:', err);
         res.status(500).json({ success: false, message: 'Terjadi kesalahan server' });
     }
 });
-
 
 module.exports = router;
