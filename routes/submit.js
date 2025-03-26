@@ -10,24 +10,13 @@ router.post('/', async(req, res) => {
     }
 
     try {
-        // Ambil id_unit dari riwayat
-        const [unitResult] = await db.execute(
-            'SELECT id_unit FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1', [id_riwayat]
-        );
-
-        if (unitResult.length === 0) {
-            return res.status(404).json({ message: 'Riwayat tidak ditemukan' });
-        }
-
-        const id_unit = unitResult[0].id_unit;
-
-        // Cek apakah ada tugas di unit ini yang belum selesai
+        // Cek apakah semua status di detail_riwayat_luar dengan id_riwayat ini sudah selesai (id_status = 2)
         const [statusResult] = await db.execute(
-            'SELECT COUNT(*) AS tugasBelumSelesai FROM tugas_unit WHERE id_unit = ? AND id_status != 2', [id_unit]
+            'SELECT COUNT(*) AS belumSelesai FROM detail_riwayat_luar WHERE id_riwayat = ? AND id_status != 2', [id_riwayat]
         );
 
-        if (statusResult[0].tugasBelumSelesai > 0) {
-            return res.status(400).json({ message: 'Selesaikan tugas dulu sebelum submit' });
+        if (statusResult[0].belumSelesai > 0) {
+            return res.status(400).json({ message: 'Selesaikan semua tugas sebelum submit' });
         }
 
         // Ambil waktu lokal WIB dalam format HH:mm:ss
@@ -45,6 +34,7 @@ router.post('/', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 router.get('/unit/:id_unit', async(req, res) => {
     const { id_unit } = req.params;
