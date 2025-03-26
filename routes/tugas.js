@@ -59,35 +59,52 @@ const getFormattedDateTime = (date) => {
 router.put('/rekap-selesai/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota, id_riwayat } = req.body;
+        const { id_riwayat, nama_anggota } = req.body;
         const { tanggal, jam } = getFormattedDateTime(new Date());
         const idStatus = 2;
 
+        console.log("Data diterima dari Flutter:", req.body);
+
+        if (!id_riwayat || !nama_anggota) {
+            return res.status(400).json({ message: 'ID riwayat dan nama anggota harus disertakan' });
+        }
+
+        const id_riwayat_int = parseInt(id_riwayat, 10);
+        if (isNaN(id_riwayat_int)) {
+            return res.status(400).json({ message: 'ID riwayat tidak valid' });
+        }
+
+        // 🔍 Cek apakah id_riwayat ada di tabel riwayat_luar
+        const queryCekRiwayat = 'SELECT id_riwayat FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1';
+        const [cekRiwayat] = await db.execute(queryCekRiwayat, [id_riwayat_int]);
+
+        if (cekRiwayat.length === 0) {
+            return res.status(404).json({ message: 'ID riwayat tidak ditemukan di riwayat_luar' });
+        }
+
+        console.log("ID Riwayat ditemukan:", id_riwayat_int);
+
+        // 🔍 Cari id_anggota berdasarkan nama_anggota
         const queryAnggota = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
         const [anggotaResult] = await db.execute(queryAnggota, [nama_anggota]);
+
         if (anggotaResult.length === 0) {
             return res.status(404).json({ message: 'Anggota tidak ditemukan' });
         }
+
         const id_anggota = anggotaResult[0].id_anggota;
-
-        // 🔥 Cek apakah id_riwayat ada di riwayat_luar
-        const queryCekRiwayat = 'SELECT id_riwayat FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1';
-        const [cekRiwayat] = await db.execute(queryCekRiwayat, [id_riwayat]);
-
-        if (cekRiwayat.length === 0) {
-            return res.status(400).json({ message: 'id_riwayat tidak ditemukan di riwayat_luar' });
-        }
+        console.log("ID Anggota ditemukan:", id_anggota);
 
         // 🔄 UPDATE atau INSERT ke detail_riwayat_luar
         const updateQuery = `UPDATE detail_riwayat_luar 
             SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ? 
             WHERE id_tugas = ? AND id_riwayat = ?`;
-        const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, id_anggota, idTugas, id_riwayat]);
+        const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, id_anggota, idTugas, id_riwayat_int]);
 
         if (updateResults.affectedRows === 0) {
             const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_selesai, jam_selesai, id_anggota, id_riwayat) 
                 VALUES (?, ?, ?, ?, ?, ?)`;
-            await db.execute(insertQuery, [idTugas, idStatus, tanggal, jam, id_anggota, id_riwayat]);
+            await db.execute(insertQuery, [idTugas, idStatus, tanggal, jam, id_anggota, id_riwayat_int]);
         }
 
         res.json({ message: 'Rekap tugas selesai berhasil diperbarui' });
@@ -97,41 +114,55 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
     }
 });
 
+
 router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota, keterangan, id_status, id_riwayat } = req.body;
+        const { id_riwayat, nama_anggota, keterangan, id_status } = req.body;
         const { tanggal, jam } = getFormattedDateTime(new Date());
 
-        if (!id_status) {
-            return res.status(400).json({ message: 'id_status harus disertakan' });
+        console.log("Data diterima dari Flutter:", req.body);
+
+        if (!id_riwayat || !nama_anggota || !id_status) {
+            return res.status(400).json({ message: 'ID riwayat, nama anggota, dan id_status harus disertakan' });
         }
 
+        const id_riwayat_int = parseInt(id_riwayat, 10);
+        if (isNaN(id_riwayat_int)) {
+            return res.status(400).json({ message: 'ID riwayat tidak valid' });
+        }
+
+        // 🔍 Cek apakah id_riwayat ada di tabel riwayat_luar
+        const queryCekRiwayat = 'SELECT id_riwayat FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1';
+        const [cekRiwayat] = await db.execute(queryCekRiwayat, [id_riwayat_int]);
+
+        if (cekRiwayat.length === 0) {
+            return res.status(404).json({ message: 'ID riwayat tidak ditemukan di riwayat_luar' });
+        }
+
+        console.log("ID Riwayat ditemukan:", id_riwayat_int);
+
+        // 🔍 Cari id_anggota berdasarkan nama_anggota
         const queryAnggota = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
         const [anggotaResult] = await db.execute(queryAnggota, [nama_anggota]);
+
         if (anggotaResult.length === 0) {
             return res.status(404).json({ message: 'Anggota tidak ditemukan' });
         }
+
         const id_anggota = anggotaResult[0].id_anggota;
-
-        // 🔥 Cek apakah id_riwayat ada di riwayat_luar
-        const queryCekRiwayat = 'SELECT id_riwayat FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1';
-        const [cekRiwayat] = await db.execute(queryCekRiwayat, [id_riwayat]);
-
-        if (cekRiwayat.length === 0) {
-            return res.status(400).json({ message: 'id_riwayat tidak ditemukan di riwayat_luar' });
-        }
+        console.log("ID Anggota ditemukan:", id_anggota);
 
         // 🔄 UPDATE atau INSERT ke detail_riwayat_luar
         const updateQuery = `UPDATE detail_riwayat_luar 
             SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), id_anggota = ? 
             WHERE id_tugas = ? AND id_riwayat = ?`;
-        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas, id_riwayat]);
+        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas, id_riwayat_int]);
 
         if (updateResults.affectedRows === 0) {
             const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota, id_riwayat) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota, id_riwayat]);
+            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota, id_riwayat_int]);
         }
 
         res.json({ message: 'Rekap tugas tidak aman berhasil diperbarui' });
@@ -140,6 +171,7 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 
 // Endpoint untuk mengambil rekap tugas
