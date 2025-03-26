@@ -65,21 +65,7 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
 
         console.log("Data diterima dari Flutter:", req.body);
 
-        const queryRiwayat = `
-        SELECT id_riwayat FROM riwayat_luar 
-        WHERE id_anggota = ? 
-        ORDER BY id_riwayat DESC 
-        LIMIT 1`;
-        const [riwayatResult] = await db.execute(queryRiwayat, [id_anggota]);
-
-        if (riwayatResult.length === 0) {
-            return res.status(404).json({ message: 'ID riwayat tidak ditemukan untuk tugas ini' });
-        }
-
-        const id_riwayat_int = riwayatResult[0].id_riwayat;
-        console.log("ID Riwayat ditemukan:", id_riwayat_int);
-
-        // 🔍 Cari ID anggota berdasarkan nama_anggota
+        // 🔍 Ambil ID anggota berdasarkan nama_anggota
         const queryAnggota = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
         const [anggotaResult] = await db.execute(queryAnggota, [nama_anggota]);
 
@@ -89,6 +75,21 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
 
         const id_anggota = anggotaResult[0].id_anggota;
         console.log("ID Anggota ditemukan:", id_anggota);
+
+        // 🔍 Ambil ID riwayat berdasarkan id_anggota
+        const queryRiwayat = `
+            SELECT id_riwayat FROM riwayat_luar 
+            WHERE id_anggota = ? 
+            ORDER BY id_riwayat DESC 
+            LIMIT 1`;
+        const [riwayatResult] = await db.execute(queryRiwayat, [id_anggota]);
+
+        if (riwayatResult.length === 0) {
+            return res.status(404).json({ message: 'ID riwayat tidak ditemukan untuk tugas ini' });
+        }
+
+        const id_riwayat_int = riwayatResult[0].id_riwayat;
+        console.log("ID Riwayat ditemukan:", id_riwayat_int);
 
         // 🔄 UPDATE atau INSERT ke detail_riwayat_luar
         const updateQuery = `UPDATE detail_riwayat_luar 
@@ -108,6 +109,7 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     try {
