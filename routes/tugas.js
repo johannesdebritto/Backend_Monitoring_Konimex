@@ -60,23 +60,42 @@ const getFormattedDateTime = (date) => {
 router.put('/rekap-selesai/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota } = req.body;
+        const { id_riwayat, nama_anggota } = req.body;
         const { tanggal, jam } = getFormattedDateTime(new Date());
         const idStatus = 2;
 
+        if (!id_riwayat || !nama_anggota) {
+            return res.status(400).json({ message: 'ID riwayat dan nama anggota harus disertakan' });
+        }
+
+        // Konversi id_riwayat ke integer
+        const idRiwayat = parseInt(id_riwayat, 10);
+        if (isNaN(idRiwayat)) {
+            return res.status(400).json({ message: 'ID riwayat tidak valid' });
+        }
+
+        // Ambil id_anggota berdasarkan nama_anggota
         const queryAnggota = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
         const [anggotaResult] = await db.execute(queryAnggota, [nama_anggota]);
+
         if (anggotaResult.length === 0) {
             return res.status(404).json({ message: 'Anggota tidak ditemukan' });
         }
-        const id_anggota = anggotaResult[0].id_anggota;
+        const idAnggota = anggotaResult[0].id_anggota;
 
-        const updateQuery = `UPDATE detail_riwayat_luar SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ? WHERE id_tugas = ?`;
-        const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, id_anggota, idTugas]);
+        // Update atau insert data ke detail_riwayat_luar
+        const updateQuery = `
+            UPDATE detail_riwayat_luar 
+            SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ?, id_riwayat = ? 
+            WHERE id_tugas = ?`;
+        const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, idAnggota, idRiwayat, idTugas]);
 
         if (updateResults.affectedRows === 0) {
-            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_selesai, jam_selesai, id_anggota) VALUES (?, ?, ?, ?, ?)`;
-            await db.execute(insertQuery, [idTugas, idStatus, tanggal, jam, id_anggota]);
+            const insertQuery = `
+                INSERT INTO detail_riwayat_luar 
+                (id_tugas, id_status, tanggal_selesai, jam_selesai, id_anggota, id_riwayat) 
+                VALUES (?, ?, ?, ?, ?, ?)`;
+            await db.execute(insertQuery, [idTugas, idStatus, tanggal, jam, idAnggota, idRiwayat]);
         }
 
         res.json({ message: 'Rekap tugas selesai berhasil diperbarui' });
@@ -90,26 +109,42 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
 router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota, keterangan, id_status } = req.body;
+        const { id_riwayat, nama_anggota, keterangan, id_status } = req.body;
         const { tanggal, jam } = getFormattedDateTime(new Date());
 
-        if (!id_status) {
-            return res.status(400).json({ message: 'id_status harus disertakan' });
+        if (!id_riwayat || !nama_anggota || !id_status) {
+            return res.status(400).json({ message: 'ID riwayat, nama anggota, dan id_status harus disertakan' });
         }
 
+        // Konversi id_riwayat ke integer
+        const idRiwayat = parseInt(id_riwayat, 10);
+        if (isNaN(idRiwayat)) {
+            return res.status(400).json({ message: 'ID riwayat tidak valid' });
+        }
+
+        // Ambil id_anggota berdasarkan nama_anggota
         const queryAnggota = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
         const [anggotaResult] = await db.execute(queryAnggota, [nama_anggota]);
+
         if (anggotaResult.length === 0) {
             return res.status(404).json({ message: 'Anggota tidak ditemukan' });
         }
-        const id_anggota = anggotaResult[0].id_anggota;
+        const idAnggota = anggotaResult[0].id_anggota;
 
-        const updateQuery = `UPDATE detail_riwayat_luar SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), id_anggota = ? WHERE id_tugas = ?`;
-        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas]);
+        // Update atau insert data ke detail_riwayat_luar
+        const updateQuery = `
+            UPDATE detail_riwayat_luar 
+            SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), 
+            id_anggota = ?, id_riwayat = ? 
+            WHERE id_tugas = ?`;
+        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, idAnggota, idRiwayat, idTugas]);
 
         if (updateResults.affectedRows === 0) {
-            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota) VALUES (?, ?, ?, ?, ?, ?)`;
-            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota]);
+            const insertQuery = `
+                INSERT INTO detail_riwayat_luar 
+                (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota, id_riwayat) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, idAnggota, idRiwayat]);
         }
 
         res.json({ message: 'Rekap tugas tidak aman berhasil diperbarui' });
@@ -118,6 +153,7 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 // Endpoint untuk mengambil rekap tugas
 router.get('/rekap/:id_tugas', async(req, res) => {
