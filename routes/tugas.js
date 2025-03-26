@@ -56,11 +56,10 @@ const getFormattedDateTime = (date) => {
     };
 };
 
-// Endpoint untuk menyimpan rekap jika tugas selesai
 router.put('/rekap-selesai/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota } = req.body;
+        const { nama_anggota, id_riwayat } = req.body; // Tambahkan id_riwayat
         const { tanggal, jam } = getFormattedDateTime(new Date());
         const idStatus = 2;
 
@@ -71,12 +70,15 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
         }
         const id_anggota = anggotaResult[0].id_anggota;
 
-        const updateQuery = `UPDATE detail_riwayat_luar SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ? WHERE id_tugas = ?`;
-        const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, id_anggota, idTugas]);
+        const updateQuery = `UPDATE detail_riwayat_luar 
+            SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ? 
+            WHERE id_tugas = ? AND id_riwayat = ?`; // Pastikan filter id_riwayat juga digunakan
+        const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, id_anggota, idTugas, id_riwayat]);
 
         if (updateResults.affectedRows === 0) {
-            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_selesai, jam_selesai, id_anggota) VALUES (?, ?, ?, ?, ?)`;
-            await db.execute(insertQuery, [idTugas, idStatus, tanggal, jam, id_anggota]);
+            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_selesai, jam_selesai, id_anggota, id_riwayat) 
+                VALUES (?, ?, ?, ?, ?, ?)`;
+            await db.execute(insertQuery, [idTugas, idStatus, tanggal, jam, id_anggota, id_riwayat]);
         }
 
         res.json({ message: 'Rekap tugas selesai berhasil diperbarui' });
@@ -86,11 +88,10 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
     }
 });
 
-// Endpoint untuk menyimpan rekap jika tugas tidak aman
 router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota, keterangan, id_status } = req.body;
+        const { nama_anggota, keterangan, id_status, id_riwayat } = req.body; // Tambahkan id_riwayat
         const { tanggal, jam } = getFormattedDateTime(new Date());
 
         if (!id_status) {
@@ -104,12 +105,15 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
         }
         const id_anggota = anggotaResult[0].id_anggota;
 
-        const updateQuery = `UPDATE detail_riwayat_luar SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), id_anggota = ? WHERE id_tugas = ?`;
-        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas]);
+        const updateQuery = `UPDATE detail_riwayat_luar 
+            SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), id_anggota = ? 
+            WHERE id_tugas = ? AND id_riwayat = ?`; // Gunakan id_riwayat dalam WHERE
+        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas, id_riwayat]);
 
         if (updateResults.affectedRows === 0) {
-            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota) VALUES (?, ?, ?, ?, ?, ?)`;
-            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota]);
+            const insertQuery = `INSERT INTO detail_riwayat_luar (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota, id_riwayat) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota, id_riwayat]);
         }
 
         res.json({ message: 'Rekap tugas tidak aman berhasil diperbarui' });
