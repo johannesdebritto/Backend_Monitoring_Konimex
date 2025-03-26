@@ -29,24 +29,24 @@ router.get('/:id_unit', async(req, res) => {
     }
 });
 
-// Endpoint untuk mengupdate status tugas
-router.put('/update-status/:id_tugas', async(req, res) => {
-    try {
-        const idTugas = req.params.id_tugas;
-        const { id_status } = req.body;
-        const query = `UPDATE tugas_unit SET id_status = ? WHERE id_tugas = ?`;
+// // Endpoint untuk mengupdate status tugas
+// router.put('/update-status/:id_tugas', async(req, res) => {
+//     try {
+//         const idTugas = req.params.id_tugas;
+//         const { id_status } = req.body;
+//         const query = `UPDATE tugas_unit SET id_status = ? WHERE id_tugas = ?`;
 
-        const [results] = await db.execute(query, [id_status, idTugas]);
-        if (results.affectedRows > 0) {
-            res.json({ message: 'Status tugas berhasil diperbarui' });
-        } else {
-            res.status(404).json({ message: 'Tugas tidak ditemukan' });
-        }
-    } catch (err) {
-        console.error('Error mengupdate status tugas:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
-    }
-});
+//         const [results] = await db.execute(query, [id_status, idTugas]);
+//         if (results.affectedRows > 0) {
+//             res.json({ message: 'Status tugas berhasil diperbarui' });
+//         } else {
+//             res.status(404).json({ message: 'Tugas tidak ditemukan' });
+//         }
+//     } catch (err) {
+//         console.error('Error mengupdate status tugas:', err);
+//         res.status(500).json({ message: 'Terjadi kesalahan server' });
+//     }
+// });
 
 // Fungsi untuk mendapatkan tanggal dan waktu dari objek Date
 const getFormattedDateTime = (date) => {
