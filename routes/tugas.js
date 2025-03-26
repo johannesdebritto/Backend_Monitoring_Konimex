@@ -59,32 +59,28 @@ const getFormattedDateTime = (date) => {
 router.put('/rekap-selesai/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { id_riwayat, nama_anggota } = req.body;
+        const { nama_anggota } = req.body;
         const { tanggal, jam } = getFormattedDateTime(new Date());
         const idStatus = 2;
 
         console.log("Data diterima dari Flutter:", req.body);
 
-        if (!id_riwayat || !nama_anggota) {
-            return res.status(400).json({ message: 'ID riwayat dan nama anggota harus disertakan' });
+        // 🔍 Cari ID riwayat terbaru di `riwayat_luar`
+        const queryRiwayat = `
+            SELECT id_riwayat FROM riwayat_luar 
+            WHERE id_tugas = ? 
+            ORDER BY id_riwayat DESC 
+            LIMIT 1`;
+        const [riwayatResult] = await db.execute(queryRiwayat, [idTugas]);
+
+        if (riwayatResult.length === 0) {
+            return res.status(404).json({ message: 'ID riwayat tidak ditemukan untuk tugas ini' });
         }
 
-        const id_riwayat_int = parseInt(id_riwayat, 10);
-        if (isNaN(id_riwayat_int)) {
-            return res.status(400).json({ message: 'ID riwayat tidak valid' });
-        }
-
-        // 🔍 Cek apakah id_riwayat ada di tabel riwayat_luar
-        const queryCekRiwayat = 'SELECT id_riwayat FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1';
-        const [cekRiwayat] = await db.execute(queryCekRiwayat, [id_riwayat_int]);
-
-        if (cekRiwayat.length === 0) {
-            return res.status(404).json({ message: 'ID riwayat tidak ditemukan di riwayat_luar' });
-        }
-
+        const id_riwayat_int = riwayatResult[0].id_riwayat;
         console.log("ID Riwayat ditemukan:", id_riwayat_int);
 
-        // 🔍 Cari id_anggota berdasarkan nama_anggota
+        // 🔍 Cari ID anggota berdasarkan nama_anggota
         const queryAnggota = 'SELECT id_anggota FROM anggota WHERE nama_anggota = ? LIMIT 1';
         const [anggotaResult] = await db.execute(queryAnggota, [nama_anggota]);
 
@@ -113,7 +109,6 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     try {
