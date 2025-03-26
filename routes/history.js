@@ -22,26 +22,35 @@ router.get('/history-patroli-dalam/rekap', async(req, res) => {
     }
 });
 
-router.get('/histori-unit-luar', async(req, res) => {
+router.get('/history-detail-luar', async(req, res) => {
     try {
-        const [results] = await db.execute(
-            `SELECT r.id_riwayat, r.id_unit, u.nama_unit, r.hari, 
-                    DATE_FORMAT(CONVERT_TZ(r.tanggal, '+00:00', '+07:00'), '%d-%m-%Y') AS tanggal,  
-                    r.waktu_mulai_luar, r.waktu_selesai_luar, r.id_status_luar, s.nama_status
-             FROM riwayat_luar r
-             JOIN status s ON r.id_status_luar = s.id_status
-             JOIN unit u ON r.id_unit = u.id_unit`
-        );
+        const query = `
+            SELECT dr.id_rekap, dr.id_tugas, tu.nama_tugas, s.nama_status, 
+                   dr.keterangan_masalah, 
+                   DATE_FORMAT(dr.tanggal_selesai, '%Y-%m-%d') AS tanggal_selesai,
+                   TIME_FORMAT(dr.jam_selesai, '%H:%i:%s') AS jam_selesai
+            FROM detail_riwayat_luar dr
+            JOIN tugas_unit tu ON dr.id_tugas = tu.id_tugas
+            JOIN status s ON dr.id_status = s.id_status
+            ORDER BY dr.id_rekap ASC
+        `;
 
-        if (results.length === 0) {
-            return res.status(404).json({ message: 'Tidak ada riwayat ditemukan' });
+        console.log("🔵 [DEBUG] Menjalankan query tanpa filter id_unit");
+
+        const [results] = await db.execute(query);
+
+        if (results.length > 0) {
+            console.log("✅ [SUCCESS] Data ditemukan:", results);
+            res.json(results);
+        } else {
+            console.warn("⚠️ [WARNING] Tidak ada riwayat ditemukan");
+            res.status(404).json({ message: "Tidak ada riwayat ditemukan" });
         }
-
-        res.json(results);
     } catch (err) {
-        console.error('Error mengambil riwayat:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
+        console.error("🔥 [ERROR] Terjadi kesalahan saat mengambil detail riwayat:", err);
+        res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 });
+
 
 module.exports = router;
