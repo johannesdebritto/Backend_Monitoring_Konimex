@@ -59,7 +59,7 @@ const getFormattedDateTime = (date) => {
 router.put('/rekap-selesai/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota, id_riwayat } = req.body; // Tambahkan id_riwayat
+        const { nama_anggota, id_riwayat } = req.body;
         const { tanggal, jam } = getFormattedDateTime(new Date());
         const idStatus = 2;
 
@@ -70,9 +70,18 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
         }
         const id_anggota = anggotaResult[0].id_anggota;
 
+        // 🔥 Cek apakah id_riwayat ada di riwayat_luar
+        const queryCekRiwayat = 'SELECT id_riwayat FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1';
+        const [cekRiwayat] = await db.execute(queryCekRiwayat, [id_riwayat]);
+
+        if (cekRiwayat.length === 0) {
+            return res.status(400).json({ message: 'id_riwayat tidak ditemukan di riwayat_luar' });
+        }
+
+        // 🔄 UPDATE atau INSERT ke detail_riwayat_luar
         const updateQuery = `UPDATE detail_riwayat_luar 
             SET id_status = ?, tanggal_selesai = ?, jam_selesai = ?, id_anggota = ? 
-            WHERE id_tugas = ? AND id_riwayat = ?`; // Pastikan filter id_riwayat juga digunakan
+            WHERE id_tugas = ? AND id_riwayat = ?`;
         const [updateResults] = await db.execute(updateQuery, [idStatus, tanggal, jam, id_anggota, idTugas, id_riwayat]);
 
         if (updateResults.affectedRows === 0) {
@@ -91,7 +100,7 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
 router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const { nama_anggota, keterangan, id_status, id_riwayat } = req.body; // Tambahkan id_riwayat
+        const { nama_anggota, keterangan, id_status, id_riwayat } = req.body;
         const { tanggal, jam } = getFormattedDateTime(new Date());
 
         if (!id_status) {
@@ -105,9 +114,18 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
         }
         const id_anggota = anggotaResult[0].id_anggota;
 
+        // 🔥 Cek apakah id_riwayat ada di riwayat_luar
+        const queryCekRiwayat = 'SELECT id_riwayat FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1';
+        const [cekRiwayat] = await db.execute(queryCekRiwayat, [id_riwayat]);
+
+        if (cekRiwayat.length === 0) {
+            return res.status(400).json({ message: 'id_riwayat tidak ditemukan di riwayat_luar' });
+        }
+
+        // 🔄 UPDATE atau INSERT ke detail_riwayat_luar
         const updateQuery = `UPDATE detail_riwayat_luar 
             SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, keterangan_masalah = COALESCE(keterangan_masalah, ?), id_anggota = ? 
-            WHERE id_tugas = ? AND id_riwayat = ?`; // Gunakan id_riwayat dalam WHERE
+            WHERE id_tugas = ? AND id_riwayat = ?`;
         const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas, id_riwayat]);
 
         if (updateResults.affectedRows === 0) {
@@ -122,6 +140,7 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 // Endpoint untuk mengambil rekap tugas
 router.get('/rekap/:id_tugas', async(req, res) => {
