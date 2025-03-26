@@ -65,13 +65,12 @@ router.put('/rekap-selesai/:id_tugas', async(req, res) => {
 
         console.log("Data diterima dari Flutter:", req.body);
 
-        // 🔍 Cari ID riwayat terbaru di `riwayat_luar`
         const queryRiwayat = `
-            SELECT id_riwayat FROM riwayat_luar 
-            WHERE id_tugas = ? 
-            ORDER BY id_riwayat DESC 
-            LIMIT 1`;
-        const [riwayatResult] = await db.execute(queryRiwayat, [idTugas]);
+        SELECT id_riwayat FROM riwayat_luar 
+        WHERE id_anggota = ? 
+        ORDER BY id_riwayat DESC 
+        LIMIT 1`;
+        const [riwayatResult] = await db.execute(queryRiwayat, [id_anggota]);
 
         if (riwayatResult.length === 0) {
             return res.status(404).json({ message: 'ID riwayat tidak ditemukan untuk tugas ini' });
