@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db'); // Import koneksi database
 
-router.get('/api/history/history-patroli-dalam/rekap', async(req, res) => {
+router.get('history-patroli-dalam/rekap', async(req, res) => {
     try {
         const query = `
             SELECT id_riwayat, bagian, keterangan_masalah, 
