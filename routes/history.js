@@ -25,17 +25,17 @@ router.get('/history-patroli-dalam/rekap', async(req, res) => {
 router.get('/history-detail-luar', async(req, res) => {
     try {
         const query = `
-            SELECT dr.id_rekap, dr.id_tugas, tu.nama_tugas, s.nama_status, 
+            SELECT dr.id_riwayat, dr.id_tugas, tu.nama_tugas, s.nama_status, 
                    dr.keterangan_masalah, 
                    DATE_FORMAT(dr.tanggal_selesai, '%Y-%m-%d') AS tanggal_selesai,
                    TIME_FORMAT(dr.jam_selesai, '%H:%i:%s') AS jam_selesai
             FROM detail_riwayat_luar dr
             JOIN tugas_unit tu ON dr.id_tugas = tu.id_tugas
             JOIN status s ON dr.id_status = s.id_status
-            ORDER BY dr.id_rekap ASC
+            ORDER BY dr.id_riwayat ASC
         `;
 
-        console.log("🔵 [DEBUG] Menjalankan query tanpa filter id_unit");
+        console.log("🔵 [DEBUG] Menjalankan query dengan id_riwayat");
 
         const [results] = await db.execute(query);
 
