@@ -171,13 +171,24 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
 });
 
 
-// Endpoint untuk mengambil rekap tugas
 router.get('/rekap/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        const query = `SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah FROM detail_riwayat_luar WHERE id_tugas = ?`;
+        const query = `
+            SELECT 
+                d.id_status, 
+                s.nama_status,  -- Ambil nama status dari tabel status
+                d.tanggal_selesai, 
+                d.jam_selesai, 
+                d.tanggal_gagal, 
+                d.jam_gagal, 
+                d.keterangan_masalah 
+            FROM detail_riwayat_luar d
+            JOIN status s ON d.id_status = s.id_status  -- Join ke tabel status
+            WHERE d.id_tugas = ?`;
 
         const [results] = await db.execute(query, [idTugas]);
+
         if (results.length > 0) {
             res.json(results[0]);
         } else {
@@ -188,6 +199,7 @@ router.get('/rekap/:id_tugas', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 router.get('/detail_riwayat/:id_unit', async(req, res) => {
     try {
