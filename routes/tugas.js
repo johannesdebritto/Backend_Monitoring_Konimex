@@ -212,9 +212,10 @@ router.get('/rekap/:id_tugas', async(req, res) => {
         const [results] = await db.execute(query, [idTugas]);
 
         if (results.length > 0) {
-            console.log("Data dari database:", results[0]); // Tambahin ini buat debug
+            console.log("Data dari database:", results[0]); // Debugging
             res.json(results[0]);
         } else {
+            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", idTugas);
             res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
