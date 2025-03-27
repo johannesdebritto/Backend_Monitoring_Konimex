@@ -133,9 +133,9 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
         const id_anggota = anggotaResult[0].id_anggota;
         console.log("ID Anggota ditemukan:", id_anggota);
 
-        // 🔍 Cek id_riwayat terbaru berdasarkan id_anggota
+        // 🔍 Cek id_riwayat dan id_unit berdasarkan id_anggota
         const queryRiwayat = `
-            SELECT id_riwayat FROM riwayat_luar 
+            SELECT id_riwayat, id_unit FROM riwayat_luar 
             WHERE id_anggota = ? 
             ORDER BY id_riwayat DESC 
             LIMIT 1`;
@@ -145,22 +145,22 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
             return res.status(404).json({ message: 'ID riwayat tidak ditemukan di riwayat_luar' });
         }
 
-        const id_riwayat_int = riwayatResult[0].id_riwayat;
-        console.log("ID Riwayat ditemukan:", id_riwayat_int);
+        const { id_riwayat, id_unit } = riwayatResult[0];
+        console.log("ID Riwayat ditemukan:", id_riwayat, "ID Unit ditemukan:", id_unit);
 
         // 🔄 UPDATE atau INSERT ke detail_riwayat_luar
         const updateQuery = `UPDATE detail_riwayat_luar 
             SET id_status = ?, tanggal_gagal = ?, jam_gagal = ?, 
                 keterangan_masalah = COALESCE(NULLIF(?, ''), keterangan_masalah), 
-                id_anggota = ? 
+                id_anggota = ?, id_unit = ? 
             WHERE id_tugas = ? AND id_riwayat = ?`;
-        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, idTugas, id_riwayat_int]);
+        const [updateResults] = await db.execute(updateQuery, [id_status, tanggal, jam, keterangan, id_anggota, id_unit, idTugas, id_riwayat]);
 
         if (updateResults.affectedRows === 0) {
             const insertQuery = `INSERT INTO detail_riwayat_luar 
-                (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota, id_riwayat) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota, id_riwayat_int]);
+                (id_tugas, id_status, tanggal_gagal, jam_gagal, keterangan_masalah, id_anggota, id_riwayat, id_unit) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+            await db.execute(insertQuery, [idTugas, id_status, tanggal, jam, keterangan, id_anggota, id_riwayat, id_unit]);
         }
 
         res.json({ message: 'Rekap tugas tidak aman berhasil diperbarui' });
