@@ -267,6 +267,9 @@ router.get('/cek_status_tugas', async(req, res) => {
         const [statusResult] = await db.execute(
             'SELECT id_status FROM detail_riwayat_luar WHERE id_unit = ? AND id_riwayat = ?', [id_unit, id_riwayat]
         );
+        console.log('ID Riwayat:', id_riwayat);
+        console.log('ID Unit:', id_unit);
+        console.log('Hasil Query Status:', statusResult);
 
         if (statusResult.length === 0) {
             return res.status(400).json({ message: 'Belum ada tugas untuk unit ini' });
