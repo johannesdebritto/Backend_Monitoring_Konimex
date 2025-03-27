@@ -26,16 +26,17 @@ router.get('/history-detail-luar', async(req, res) => {
     try {
         const query = `
             SELECT dr.id_riwayat, dr.id_tugas, tu.nama_tugas, s.nama_status, 
-                   dr.keterangan_masalah, 
+                   dr.keterangan_masalah, dr.id_unit, u.nama_unit,
                    DATE_FORMAT(dr.tanggal_selesai, '%Y-%m-%d') AS tanggal_selesai,
                    TIME_FORMAT(dr.jam_selesai, '%H:%i:%s') AS jam_selesai
             FROM detail_riwayat_luar dr
             JOIN tugas_unit tu ON dr.id_tugas = tu.id_tugas
             JOIN status s ON dr.id_status = s.id_status
+            JOIN unit u ON dr.id_unit = u.id_unit  -- 🔹 JOIN untuk ambil nama_unit
             ORDER BY dr.id_riwayat ASC
         `;
 
-        console.log("🔵 [DEBUG] Menjalankan query dengan id_riwayat");
+        console.log("🔵 [DEBUG] Menjalankan query dengan id_riwayat, id_unit, dan nama_unit");
 
         const [results] = await db.execute(query);
 
@@ -51,6 +52,5 @@ router.get('/history-detail-luar', async(req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan server" });
     }
 });
-
 
 module.exports = router;
