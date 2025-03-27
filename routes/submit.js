@@ -23,7 +23,7 @@ router.post('/', async(req, res) => {
 
         // Cek apakah ada tugas di unit ini yang belum selesai
         const [statusResult] = await db.execute(
-            'SELECT COUNT(*) AS tugasBelumSelesai FROM tugas_unit WHERE id_unit = ? AND id_status != 2', [id_unit]
+            'SELECT COUNT(*) AS tugasBelumSelesai FROM detail_riwayat_luar WHERE id_unit = ? AND id_status != 2', [id_unit]
         );
 
         if (statusResult[0].tugasBelumSelesai > 0) {
