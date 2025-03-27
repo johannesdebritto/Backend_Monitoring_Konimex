@@ -201,42 +201,25 @@ router.get('/rekap/:id_tugas', async(req, res) => {
 });
 
 
-router.get('/detail_riwayat/:id_unit', async(req, res) => {
+router.get('/rekap/:id_tugas', async(req, res) => {
     try {
-        const idUnit = req.params.id_unit;
-        console.log("🟡 [DEBUG] id_unit diterima di API:", idUnit);
-
-        if (!idUnit) {
-            console.error("❌ [ERROR] id_unit tidak dikirim!");
-            return res.status(400).json({ message: "id_unit tidak boleh kosong!" });
-        }
-
+        const idTugas = req.params.id_tugas;
         const query = `
-            SELECT dr.id_rekap, dr.id_tugas, tu.nama_tugas, s.nama_status, 
-                   dr.keterangan_masalah, 
-                   DATE_FORMAT(dr.tanggal_selesai, '%Y-%m-%d') AS tanggal_selesai,
-                   TIME_FORMAT(dr.jam_selesai, '%H:%i:%s') AS jam_selesai
-            FROM detail_riwayat_luar dr
-            JOIN tugas_unit tu ON dr.id_tugas = tu.id_tugas
-            JOIN status s ON dr.id_status = s.id_status
-            WHERE tu.id_unit = ?
-            ORDER BY dr.id_rekap ASC
-        `;
+            SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah 
+            FROM detail_riwayat_luar 
+            WHERE id_tugas = ?`;
 
-        console.log("🔵 [DEBUG] Menjalankan query dengan id_unit:", idUnit);
-
-        const [results] = await db.execute(query, [idUnit]);
+        const [results] = await db.execute(query, [idTugas]);
 
         if (results.length > 0) {
-            console.log("✅ [SUCCESS] Data ditemukan:", results);
-            res.json(results);
+            console.log("Data dari database:", results[0]); // Tambahin ini buat debug
+            res.json(results[0]);
         } else {
-            console.warn("⚠️ [WARNING] Tidak ada riwayat ditemukan untuk unit ini");
-            res.status(404).json({ message: "Tidak ada riwayat ditemukan untuk unit ini" });
+            res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
-        console.error("🔥 [ERROR] Terjadi kesalahan saat mengambil detail riwayat:", err);
-        res.status(500).json({ message: "Terjadi kesalahan server" });
+        console.error('Error mengambil rekap tugas:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
 
