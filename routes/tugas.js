@@ -204,31 +204,6 @@ router.get('/rekap/:id_tugas', async(req, res) => {
     }
 });
 
-router.get('/rekap/:id_tugas', async(req, res) => {
-    try {
-        console.log("Endpoint /rekap/:id_tugas diakses 2"); // Logging untuk endpoint kedua
-        const idTugas = req.params.id_tugas;
-
-        const query = `
-            SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah 
-            FROM detail_riwayat_luar 
-            WHERE id_tugas = ?`;
-
-        const [results] = await db.execute(query, [idTugas]);
-
-        if (results.length > 0) {
-            console.log(`Data ditemukan untuk id_tugas: ${idTugas}`, results[0]); // Debugging
-            res.json(results[0]);
-        } else {
-            console.log(`Rekap tugas tidak ditemukan untuk id_tugas: ${idTugas}`);
-            res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
-        }
-    } catch (err) {
-        console.error('Error mengambil rekap tugas:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
-    }
-});
-
 
 // Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
 router.get('/status_data/:id_unit', async(req, res) => {
