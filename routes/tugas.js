@@ -230,7 +230,9 @@ router.get('/status_data/:id_unit', async(req, res) => {
 
 router.get('/cek-status/:id_tugas/:id_riwayat', async(req, res) => {
     try {
-        const { id_tugas, id_riwayat } = req.params;
+        const id_tugas = parseInt(req.params.id_tugas, 10);
+        const id_riwayat = parseInt(req.params.id_riwayat, 10);
+
         console.log(`📌 [GET] /cek-status/${id_tugas}/${id_riwayat} diakses`);
 
         const query = `
@@ -242,20 +244,21 @@ router.get('/cek-status/:id_tugas/:id_riwayat', async(req, res) => {
         console.log(`📌 Parameter Query -> [id_tugas: ${id_tugas}, id_riwayat: ${id_riwayat}]`);
 
         const [results] = await db.execute(query, [id_tugas, id_riwayat]);
+        console.log(`🔍 Hasil Query dari DB:`, results);
 
         if (results.length > 0) {
-            console.log(`✅ Data ditemukan:`, results);
-            res.json({ id_status: results.length > 0 ? results[0].id_status : null });
-
+            console.log(`✅ Data ditemukan:`, results[0]);
+            return res.status(200).json({ id_status: results[0].id_status });
         } else {
             console.log(`⚠️ Data tidak ditemukan untuk id_tugas: ${id_tugas}, id_riwayat: ${id_riwayat}`);
-            res.status(404).json({ message: 'Data tidak ditemukan' });
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
         }
     } catch (err) {
         console.error('❌ Error mengambil status:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
+        return res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
     }
 });
+
 
 
 module.exports = router;
