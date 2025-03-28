@@ -172,6 +172,7 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
 
 
 router.get('/rekap/:id_tugas', async(req, res) => {
+    console.log("==> ROUTE 1 dipanggil dengan id_tugas:", req.params.id_tugas);
     try {
         const idTugas = req.params.id_tugas;
         const query = `
@@ -202,26 +203,9 @@ router.get('/rekap/:id_tugas', async(req, res) => {
 
 
 router.get('/rekap/:id_tugas/:id_riwayat', async(req, res) => {
-    console.log("Request params - id_tugas:", req.params.id_tugas, "id_riwayat:", req.params.id_riwayat);
-
+    console.log("==> ROUTE 2 dipanggil dengan id_tugas:", req.params.id_tugas);
     try {
         const { id_tugas, id_riwayat } = req.params;
-
-        if (!id_tugas || !id_riwayat) {
-            console.log("Error: Parameter id_tugas atau id_riwayat tidak ada!");
-            return res.status(400).json({ message: "Parameter tidak lengkap" });
-        }
-
-        // Cek apakah data benar-benar ada di database sebelum query utama
-        const checkQuery = `SELECT * FROM detail_riwayat_luar WHERE id_tugas = ? AND id_riwayat = ?`;
-        const [checkResult] = await db.execute(checkQuery, [id_tugas, id_riwayat]);
-
-        if (checkResult.length === 0) {
-            console.log("Data tidak ditemukan di detail_riwayat_luar untuk id_tugas:", id_tugas, "dan id_riwayat:", id_riwayat);
-            return res.status(404).json({ message: "Rekap tugas tidak ditemukan" });
-        }
-
-        // Query utama
         const query = `
             SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah 
             FROM detail_riwayat_luar 
@@ -242,6 +226,7 @@ router.get('/rekap/:id_tugas/:id_riwayat', async(req, res) => {
     }
 });
 
+z
 // Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
 router.get('/status_data/:id_unit', async(req, res) => {
     try {
