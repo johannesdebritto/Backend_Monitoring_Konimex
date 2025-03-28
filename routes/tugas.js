@@ -228,51 +228,31 @@ router.get('/status_data/:id_unit', async(req, res) => {
 });
 
 
-router.get('/cek_status_tugas', async(req, res) => {
-    const { id_riwayat, id_tugas } = req.query;
-
-    if (!id_riwayat || !id_tugas) {
-        return res.status(400).json({ message: 'ID riwayat dan ID tugas harus diisi' });
-    }
-
+router.get('/cek-status/:id_tugas/:id_riwayat', async(req, res) => {
     try {
-        // Ambil id_unit dari riwayat_luar
-        const [unitResult] = await db.execute(
-            'SELECT id_unit FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1', [id_riwayat]
-        );
+        const { id_tugas, id_riwayat } = req.params;
+        console.log(`📌 [GET] /cek-status/${id_tugas}/${id_riwayat} diakses`);
 
-        if (unitResult.length === 0) {
-            return res.status(404).json({ message: 'Riwayat tidak ditemukan' });
-        }
+        const query = `
+            SELECT id_status 
+            FROM detail_riwayat_luar 
+            WHERE id_tugas = ? AND id_riwayat = ?`;
 
-        const id_unit = unitResult[0].id_unit;
+        console.log(`🛠️ Eksekusi Query: ${query}`);
+        console.log(`📌 Parameter Query -> [id_tugas: ${id_tugas}, id_riwayat: ${id_riwayat}]`);
 
-        // Cek status berdasarkan id_unit, id_riwayat, dan id_tugas
-        const [statusResult] = await db.execute(
-            'SELECT id_status FROM detail_riwayat_luar WHERE id_unit = ? AND id_riwayat = ? AND id_tugas = ?', [id_unit, id_riwayat, id_tugas]
-        );
-        console.log('ID Riwayat:', id_riwayat);
-        console.log('ID Unit:', id_unit);
-        console.log('ID Tugas:', id_tugas);
-        console.log('Hasil Query Status:', statusResult);
+        const [results] = await db.execute(query, [id_tugas, id_riwayat]);
 
-        if (statusResult.length === 0) {
-            return res.status(400).json({ message: 'Belum ada tugas untuk unit ini dengan ID tugas tersebut' });
-        }
-
-        const semuaStatus = statusResult.map(row => row.id_status);
-
-        if (semuaStatus.includes(3)) {
-            return res.json({ status: 3 }); // Ada masalah
-        } else if (semuaStatus.every(status => status === 2)) {
-            return res.json({ status: 2 }); // Semua selesai
+        if (results.length > 0) {
+            console.log(`✅ Data ditemukan:`, results);
+            res.json({ id_status: results.map(row => row.id_status) });
         } else {
-            return res.json({ status: 1 }); // Masih ada tugas yang belum selesai
+            console.log(`⚠️ Data tidak ditemukan untuk id_tugas: ${id_tugas}, id_riwayat: ${id_riwayat}`);
+            res.status(404).json({ message: 'Data tidak ditemukan' });
         }
-
     } catch (err) {
-        console.error('Error saat cek status:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
+        console.error('❌ Error mengambil status:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
     }
 });
 
