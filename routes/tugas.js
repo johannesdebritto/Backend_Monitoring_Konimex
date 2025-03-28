@@ -201,21 +201,21 @@ router.get('/rekap/:id_tugas', async(req, res) => {
 });
 
 
-router.get('/rekap/:id_tugas', async(req, res) => {
+router.get('/rekap/:id_tugas/:id_riwayat', async(req, res) => {
     try {
-        const idTugas = req.params.id_tugas;
+        const { id_tugas, id_riwayat } = req.params;
         const query = `
             SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah 
             FROM detail_riwayat_luar 
-            WHERE id_tugas = ?`;
+            WHERE id_tugas = ? AND id_riwayat = ?`;
 
-        const [results] = await db.execute(query, [idTugas]);
+        const [results] = await db.execute(query, [id_tugas, id_riwayat]);
 
         if (results.length > 0) {
             console.log("Data dari database:", results[0]); // Debugging
             res.json(results[0]);
         } else {
-            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", idTugas);
+            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", id_riwayat);
             res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
@@ -223,7 +223,6 @@ router.get('/rekap/:id_tugas', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 // Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
 router.get('/status_data/:id_unit', async(req, res) => {
