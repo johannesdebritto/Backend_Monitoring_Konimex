@@ -177,7 +177,7 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
     try {
         const { id_tugas, id_riwayat } = req.params;
 
-        // Jika id_riwayat kosong atau "null", hanya pakai id_tugas
+        // Jika id_riwayat kosong, "null", atau bukan angka, abaikan
         let query = `
             SELECT 
                 d.id_status, 
@@ -193,12 +193,12 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
 
         let params = [id_tugas];
 
-        if (id_riwayat && id_riwayat !== "null") {
+        if (id_riwayat && id_riwayat !== "null" && !isNaN(id_riwayat)) {
             query += ` AND d.id_riwayat = ?`;
-            params.push(id_riwayat);
+            params.push(parseInt(id_riwayat)); // Konversi ke integer
         }
 
-        console.log("QUERY:", query, "PARAMS:", params); // Debugging
+        console.log("Final QUERY:", query, "PARAMS:", params); // Debugging
 
         const [results] = await db.execute(query, params);
 
