@@ -177,7 +177,9 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
     try {
         const { id_tugas, id_riwayat } = req.params;
 
-        // Jika id_riwayat kosong, "null", atau bukan angka, abaikan
+        // Pastikan id_riwayat diubah ke integer atau tetap null
+        const parsedIdRiwayat = id_riwayat && id_riwayat !== "null" ? parseInt(id_riwayat, 10) : null;
+
         let query = `
             SELECT 
                 d.id_status, 
@@ -193,19 +195,19 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
 
         let params = [id_tugas];
 
-        if (id_riwayat && id_riwayat !== "null" && !isNaN(id_riwayat)) {
+        if (parsedIdRiwayat !== null && !isNaN(parsedIdRiwayat)) {
             query += ` AND d.id_riwayat = ?`;
-            params.push(parseInt(id_riwayat)); // Konversi ke integer
+            params.push(parsedIdRiwayat);
         }
 
-        console.log("Final QUERY:", query, "PARAMS:", params); // Debugging
+        console.log("QUERY:", query, "PARAMS:", params); // Debugging
 
         const [results] = await db.execute(query, params);
 
         if (results.length > 0) {
             res.json(results[0]);
         } else {
-            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", id_riwayat || "TIDAK ADA");
+            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", parsedIdRiwayat || "TIDAK ADA");
             res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
@@ -213,6 +215,7 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
+
 
 
 // Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
