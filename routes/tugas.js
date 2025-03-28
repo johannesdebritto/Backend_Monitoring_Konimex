@@ -171,11 +171,13 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
 });
 
 
-router.get('/rekap/:id_tugas', async(req, res) => {
-    console.log("==> ROUTE 1 dipanggil dengan id_tugas:", req.params.id_tugas);
+router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
+    console.log("==> ROUTE 1 dipanggil dengan id_tugas:", req.params.id_tugas, "id_riwayat:", req.params.id_riwayat);
     try {
-        const idTugas = req.params.id_tugas;
-        const query = `
+        const { id_tugas, id_riwayat } = req.params;
+
+        // Tentukan query berdasarkan ada/tidaknya id_riwayat
+        let query = `
             SELECT 
                 d.id_status, 
                 s.nama_status,  -- Ambil nama status dari tabel status
@@ -188,36 +190,19 @@ router.get('/rekap/:id_tugas', async(req, res) => {
             JOIN status s ON d.id_status = s.id_status  -- Join ke tabel status
             WHERE d.id_tugas = ?`;
 
-        const [results] = await db.execute(query, [idTugas]);
+        let params = [id_tugas];
 
-        if (results.length > 0) {
-            res.json(results[0]);
-        } else {
-            res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
+        if (id_riwayat) {
+            query += ` AND d.id_riwayat = ?`;
+            params.push(id_riwayat);
         }
-    } catch (err) {
-        console.error('Error mengambil rekap tugas:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
-    }
-});
 
-
-router.get('/rekap/:id_tugas/:id_riwayat', async(req, res) => {
-    console.log("==> ROUTE 2 dipanggil dengan id_tugas:", req.params.id_tugas);
-    try {
-        const { id_tugas, id_riwayat } = req.params;
-        const query = `
-            SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah 
-            FROM detail_riwayat_luar 
-            WHERE id_tugas = ? AND id_riwayat = ?`;
-
-        const [results] = await db.execute(query, [id_tugas, id_riwayat]);
+        const [results] = await db.execute(query, params);
 
         if (results.length > 0) {
-            console.log("Data dari database:", results[0]); // Debugging
             res.json(results[0]);
         } else {
-            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", id_riwayat);
+            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", id_riwayat || "TIDAK ADA");
             res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
