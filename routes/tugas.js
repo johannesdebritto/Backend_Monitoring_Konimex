@@ -173,7 +173,9 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
 
 router.get('/rekap/:id_tugas', async(req, res) => {
     try {
+        console.log("Endpoint /rekap/:id_tugas diakses 1"); // Logging untuk endpoint pertama
         const idTugas = req.params.id_tugas;
+
         const query = `
             SELECT 
                 d.id_status, 
@@ -190,8 +192,10 @@ router.get('/rekap/:id_tugas', async(req, res) => {
         const [results] = await db.execute(query, [idTugas]);
 
         if (results.length > 0) {
+            console.log(`Data ditemukan untuk id_tugas: ${idTugas}`, results[0]); // Debugging
             res.json(results[0]);
         } else {
+            console.log(`Rekap tugas tidak ditemukan untuk id_tugas: ${idTugas}`);
             res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
@@ -200,10 +204,11 @@ router.get('/rekap/:id_tugas', async(req, res) => {
     }
 });
 
-
 router.get('/rekap/:id_tugas', async(req, res) => {
     try {
+        console.log("Endpoint /rekap/:id_tugas diakses 2"); // Logging untuk endpoint kedua
         const idTugas = req.params.id_tugas;
+
         const query = `
             SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah 
             FROM detail_riwayat_luar 
@@ -212,10 +217,10 @@ router.get('/rekap/:id_tugas', async(req, res) => {
         const [results] = await db.execute(query, [idTugas]);
 
         if (results.length > 0) {
-            console.log("Data dari database:", results[0]); // Debugging
+            console.log(`Data ditemukan untuk id_tugas: ${idTugas}`, results[0]); // Debugging
             res.json(results[0]);
         } else {
-            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", idTugas);
+            console.log(`Rekap tugas tidak ditemukan untuk id_tugas: ${idTugas}`);
             res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
