@@ -170,52 +170,56 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     }
 });
 
-router.get('/api/tugas/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
+
+router.get('/rekap/:id_tugas', async(req, res) => {
     try {
         const idTugas = req.params.id_tugas;
-        let idRiwayat = req.params.id_riwayat;
-
-        console.log("✅ Backend menerima ID Tugas:", idTugas);
-        console.log("✅ Backend menerima ID Riwayat:", idRiwayat);
-        console.log("✅ Tipe data ID Riwayat sebelum parse:", typeof idRiwayat);
-
-        // Kalau idRiwayat undefined/null, kasih warning biar kelihatan!
-        if (!idRiwayat) {
-            console.warn("⚠️ WARNING: ID Riwayat tidak dikirim atau null!");
-        } else {
-            idRiwayat = parseInt(idRiwayat, 10);
-            console.log("🔄 ID Riwayat setelah parseInt:", idRiwayat);
-        }
-
         const query = `
             SELECT 
                 d.id_status, 
-                s.nama_status,  
+                s.nama_status,  -- Ambil nama status dari tabel status
                 d.tanggal_selesai, 
                 d.jam_selesai, 
                 d.tanggal_gagal, 
                 d.jam_gagal, 
                 d.keterangan_masalah 
             FROM detail_riwayat_luar d
-            JOIN status s ON d.id_status = s.id_status  
-            WHERE d.id_tugas = ? ${idRiwayat ? "AND d.id_riwayat = ?" : ""}
-        `;
+            JOIN status s ON d.id_status = s.id_status  -- Join ke tabel status
+            WHERE d.id_tugas = ?`;
 
-        const params = idRiwayat ? [idTugas, idRiwayat] : [idTugas];
+        const [results] = await db.execute(query, [idTugas]);
 
-        console.log("📌 QUERY yang dijalankan:", query);
-        console.log("📌 PARAMS yang dikirim:", params);
-
-        const [result] = await db.execute(query, params);
-
-        if (result.length === 0) {
-            console.log("❌ Tidak ada data rekap yang ditemukan!");
-            return res.status(404).json({ message: "Data rekap tidak ditemukan" });
+        if (results.length > 0) {
+            res.json(results[0]);
+        } else {
+            res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
-
-        res.json(result[0]);
     } catch (err) {
-        console.error('❌ Error mengambil rekap tugas:', err);
+        console.error('Error mengambil rekap tugas:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
+    }
+});
+
+
+router.get('/rekap/:id_tugas', async(req, res) => {
+    try {
+        const idTugas = req.params.id_tugas;
+        const query = `
+            SELECT id_status, tanggal_selesai, jam_selesai, tanggal_gagal, jam_gagal, keterangan_masalah 
+            FROM detail_riwayat_luar 
+            WHERE id_tugas = ?`;
+
+        const [results] = await db.execute(query, [idTugas]);
+
+        if (results.length > 0) {
+            console.log("Data dari database:", results[0]); // Debugging
+            res.json(results[0]);
+        } else {
+            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", idTugas);
+            res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
+        }
+    } catch (err) {
+        console.error('Error mengambil rekap tugas:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
