@@ -175,10 +175,18 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
     console.log("==> ROUTE dipanggil dengan id_tugas:", req.params.id_tugas, "id_riwayat:", req.params.id_riwayat);
 
     try {
-        const { id_tugas, id_riwayat } = req.params;
+        const { id_tugas } = req.params;
+        let { id_riwayat } = req.params;
 
-        // Pastikan id_riwayat diubah ke integer atau tetap null
-        const parsedIdRiwayat = id_riwayat && id_riwayat !== "null" ? parseInt(id_riwayat, 10) : null;
+        // Jika id_riwayat tidak dikirim atau kosong, set ke null
+        if (!id_riwayat || id_riwayat === "null" || id_riwayat === "undefined") {
+            id_riwayat = null;
+        } else {
+            id_riwayat = parseInt(id_riwayat, 10);
+            if (isNaN(id_riwayat)) {
+                return res.status(400).json({ message: "id_riwayat harus berupa angka" });
+            }
+        }
 
         let query = `
             SELECT 
@@ -195,9 +203,9 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
 
         let params = [id_tugas];
 
-        if (parsedIdRiwayat !== null && !isNaN(parsedIdRiwayat)) {
+        if (id_riwayat !== null) {
             query += ` AND d.id_riwayat = ?`;
-            params.push(parsedIdRiwayat);
+            params.push(id_riwayat);
         }
 
         console.log("QUERY:", query, "PARAMS:", params); // Debugging
@@ -207,7 +215,7 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
         if (results.length > 0) {
             res.json(results[0]);
         } else {
-            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", parsedIdRiwayat || "TIDAK ADA");
+            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", id_riwayat || "TIDAK ADA");
             res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
         }
     } catch (err) {
@@ -215,7 +223,6 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 
 // Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
