@@ -172,30 +172,33 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
 
 
 router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
-    console.log("==> ROUTE 1 dipanggil dengan id_tugas:", req.params.id_tugas, "id_riwayat:", req.params.id_riwayat);
+    console.log("==> ROUTE dipanggil dengan id_tugas:", req.params.id_tugas, "id_riwayat:", req.params.id_riwayat);
+
     try {
         const { id_tugas, id_riwayat } = req.params;
 
-        // Tentukan query berdasarkan ada/tidaknya id_riwayat
+        // Jika id_riwayat kosong atau "null", hanya pakai id_tugas
         let query = `
             SELECT 
                 d.id_status, 
-                s.nama_status,  -- Ambil nama status dari tabel status
+                s.nama_status,  
                 d.tanggal_selesai, 
                 d.jam_selesai, 
                 d.tanggal_gagal, 
                 d.jam_gagal, 
                 d.keterangan_masalah 
             FROM detail_riwayat_luar d
-            JOIN status s ON d.id_status = s.id_status  -- Join ke tabel status
+            JOIN status s ON d.id_status = s.id_status  
             WHERE d.id_tugas = ?`;
 
         let params = [id_tugas];
 
-        if (id_riwayat) {
+        if (id_riwayat && id_riwayat !== "null") {
             query += ` AND d.id_riwayat = ?`;
             params.push(id_riwayat);
         }
+
+        console.log("QUERY:", query, "PARAMS:", params); // Debugging
 
         const [results] = await db.execute(query, params);
 
