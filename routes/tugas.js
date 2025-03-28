@@ -245,7 +245,8 @@ router.get('/cek-status/:id_tugas/:id_riwayat', async(req, res) => {
 
         if (results.length > 0) {
             console.log(`✅ Data ditemukan:`, results);
-            res.json({ id_status: results.map(row => row.id_status) });
+            res.json({ id_status: results.length > 0 ? results[0].id_status : null });
+
         } else {
             console.log(`⚠️ Data tidak ditemukan untuk id_tugas: ${id_tugas}, id_riwayat: ${id_riwayat}`);
             res.status(404).json({ message: 'Data tidak ditemukan' });
