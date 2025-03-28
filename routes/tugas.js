@@ -226,7 +226,7 @@ router.get('/rekap/:id_tugas/:id_riwayat', async(req, res) => {
     }
 });
 
-z
+
 // Endpoint untuk mendapatkan id_status_luar berdasarkan id_unit
 router.get('/status_data/:id_unit', async(req, res) => {
     try {
