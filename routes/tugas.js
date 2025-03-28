@@ -170,25 +170,24 @@ router.put('/rekap-tidak-aman/:id_tugas', async(req, res) => {
     }
 });
 
-
-router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
-    console.log("==> ROUTE dipanggil dengan id_tugas:", req.params.id_tugas, "id_riwayat:", req.params.id_riwayat);
-
+router.get('/api/tugas/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
     try {
-        const { id_tugas } = req.params;
-        let { id_riwayat } = req.params;
+        const idTugas = req.params.id_tugas;
+        let idRiwayat = req.params.id_riwayat;
 
-        // Jika id_riwayat tidak dikirim atau kosong, set ke null
-        if (!id_riwayat || id_riwayat === "null" || id_riwayat === "undefined") {
-            id_riwayat = null;
+        console.log("✅ Backend menerima ID Tugas:", idTugas);
+        console.log("✅ Backend menerima ID Riwayat:", idRiwayat);
+        console.log("✅ Tipe data ID Riwayat sebelum parse:", typeof idRiwayat);
+
+        // Kalau idRiwayat undefined/null, kasih warning biar kelihatan!
+        if (!idRiwayat) {
+            console.warn("⚠️ WARNING: ID Riwayat tidak dikirim atau null!");
         } else {
-            id_riwayat = parseInt(id_riwayat, 10);
-            if (isNaN(id_riwayat)) {
-                return res.status(400).json({ message: "id_riwayat harus berupa angka" });
-            }
+            idRiwayat = parseInt(idRiwayat, 10);
+            console.log("🔄 ID Riwayat setelah parseInt:", idRiwayat);
         }
 
-        let query = `
+        const query = `
             SELECT 
                 d.id_status, 
                 s.nama_status,  
@@ -199,27 +198,24 @@ router.get('/rekap/:id_tugas/:id_riwayat?', async(req, res) => {
                 d.keterangan_masalah 
             FROM detail_riwayat_luar d
             JOIN status s ON d.id_status = s.id_status  
-            WHERE d.id_tugas = ?`;
+            WHERE d.id_tugas = ? ${idRiwayat ? "AND d.id_riwayat = ?" : ""}
+        `;
 
-        let params = [id_tugas];
+        const params = idRiwayat ? [idTugas, idRiwayat] : [idTugas];
 
-        if (id_riwayat !== null) {
-            query += ` AND d.id_riwayat = ?`;
-            params.push(id_riwayat);
+        console.log("📌 QUERY yang dijalankan:", query);
+        console.log("📌 PARAMS yang dikirim:", params);
+
+        const [result] = await db.execute(query, params);
+
+        if (result.length === 0) {
+            console.log("❌ Tidak ada data rekap yang ditemukan!");
+            return res.status(404).json({ message: "Data rekap tidak ditemukan" });
         }
 
-        console.log("QUERY:", query, "PARAMS:", params); // Debugging
-
-        const [results] = await db.execute(query, params);
-
-        if (results.length > 0) {
-            res.json(results[0]);
-        } else {
-            console.log("Rekap tugas tidak ditemukan untuk id_tugas:", id_tugas, "dan id_riwayat:", id_riwayat || "TIDAK ADA");
-            res.status(404).json({ message: 'Rekap tugas tidak ditemukan' });
-        }
+        res.json(result[0]);
     } catch (err) {
-        console.error('Error mengambil rekap tugas:', err);
+        console.error('❌ Error mengambil rekap tugas:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
