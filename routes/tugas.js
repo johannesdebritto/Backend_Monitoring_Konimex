@@ -267,11 +267,17 @@ router.get('/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
 
         console.log(`📌 [GET] /detail_riwayat/${idUnit}/${idRiwayat} diakses`);
 
-        // Query yang mencocokkan id_unit dan id_riwayat
+        // Query dengan JOIN ke tabel tugas dan status
         const query = `
-            SELECT * 
-            FROM detail_riwayat_luar 
-            WHERE id_unit = ? AND id_riwayat = ?`;
+            SELECT 
+                d.id_rekap, d.id_tugas, d.id_anggota, d.id_status, 
+                d.id_riwayat, d.id_unit, d.keterangan_masalah, 
+                d.tanggal_selesai, d.jam_selesai, d.tanggal_gagal, d.jam_gagal,
+                t.nama_tugas, s.nama_status
+            FROM detail_riwayat_luar d
+            JOIN tugas t ON d.id_tugas = t.id_tugas
+            JOIN status s ON d.id_status = s.id_status
+            WHERE d.id_unit = ? AND d.id_riwayat = ?`;
 
         console.log(`🛠️ Eksekusi Query: ${query}`);
         console.log(`📌 Parameter Query -> [id_unit: ${idUnit}, id_riwayat: ${idRiwayat}]`);
@@ -280,7 +286,7 @@ router.get('/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
         console.log(`🔍 Hasil Query dari DB:`, results);
 
         if (results.length > 0) {
-            console.log(`✅ Data ditemukan:`, results[0]);
+            console.log(`✅ Data ditemukan:`, results);
             return res.status(200).json(results);
         } else {
             console.log(`⚠️ Data tidak ditemukan untuk id_unit: ${idUnit}, id_riwayat: ${idRiwayat}`);
@@ -291,6 +297,7 @@ router.get('/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
         return res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
     }
 });
+
 
 
 module.exports = router;
