@@ -275,7 +275,7 @@ router.get('/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
                 d.tanggal_selesai, d.jam_selesai, d.tanggal_gagal, d.jam_gagal,
                 t.nama_tugas, s.nama_status
             FROM detail_riwayat_luar d
-            JOIN tugas t ON d.id_tugas = t.id_tugas
+            JOIN tugas_unit t ON d.id_tugas = t.id_tugas
             JOIN status s ON d.id_status = s.id_status
             WHERE d.id_unit = ? AND d.id_riwayat = ?`;
 
