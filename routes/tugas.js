@@ -260,12 +260,12 @@ router.get('/cek-status/:id_tugas/:id_riwayat', async(req, res) => {
 });
 
 // Endpoint untuk mengambil detail riwayat berdasarkan id_unit dan id_riwayat
-router.get('/api/tugas/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
+router.get('/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
     try {
         const idUnit = parseInt(req.params.id_unit, 10);
         const idRiwayat = parseInt(req.params.id_riwayat, 10);
 
-        console.log(`📌 [GET] /api/tugas/detail_riwayat/${idUnit}/${idRiwayat} diakses`);
+        console.log(`📌 [GET] /detail_riwayat/${idUnit}/${idRiwayat} diakses`);
 
         // Query yang mencocokkan id_unit dan id_riwayat
         const query = `
