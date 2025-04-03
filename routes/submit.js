@@ -60,12 +60,14 @@ router.post('/', async(req, res) => {
     }
 });
 
+router.get('/unit/:id_unit/:id_riwayat', async(req, res) => {
+    const { id_unit, id_riwayat } = req.params;
 
-router.get('/unit/:id_unit', async(req, res) => {
-    const { id_unit } = req.params;
+    // Debugging: Log ID yang diterima dengan emoji
+    console.log(`📥 Received request for unit ID: ${id_unit}, riwayat ID: ${id_riwayat}`);
 
-    if (!id_unit) {
-        return res.status(400).json({ message: 'ID unit harus diisi' });
+    if (!id_unit || !id_riwayat) {
+        return res.status(400).json({ message: 'ID unit dan ID riwayat harus diisi' });
     }
 
     try {
@@ -76,16 +78,19 @@ router.get('/unit/:id_unit', async(req, res) => {
              FROM riwayat_luar r
              JOIN status s ON r.id_status_luar = s.id_status
              JOIN unit u ON r.id_unit = u.id_unit
-             WHERE r.id_unit = ?`, [id_unit]
+             WHERE r.id_unit = ? AND r.id_riwayat = ?`, [id_unit, id_riwayat]
         );
 
+        // Debugging: Log hasil query dengan icon
+        console.log(`🔍 Query Results: ${JSON.stringify(results)}`);
+
         if (results.length === 0) {
-            return res.status(404).json({ message: 'Tidak ada riwayat untuk unit ini' });
+            return res.status(404).json({ message: '❌ Tidak ada riwayat untuk unit dan riwayat ini' });
         }
 
         res.json(results);
     } catch (err) {
-        console.error('Error mengambil riwayat:', err);
+        console.error('❗ Error mengambil riwayat:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
