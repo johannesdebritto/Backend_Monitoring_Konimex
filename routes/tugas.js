@@ -298,6 +298,45 @@ router.get('/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
     }
 });
 
+router.get('/cek-selesai-luar/:id_riwayat', async(req, res) => {
+    const { id_riwayat } = req.params;
+
+    try {
+        // Ambil id_unit berdasarkan id_riwayat
+        const [unitResult] = await db.execute(
+            'SELECT id_unit FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1', [id_riwayat]
+        );
+
+        if (unitResult.length === 0) {
+            return res.status(404).json({ message: 'Riwayat tidak ditemukan' });
+        }
+
+        const id_unit = unitResult[0].id_unit;
+
+        // Ambil total tugas di unit ini
+        const [totalTugasResult] = await db.execute(
+            'SELECT COUNT(*) AS totalTugas FROM tugas_unit WHERE id_unit = ?', [id_unit]
+        );
+
+        const totalTugas = totalTugasResult[0].totalTugas;
+
+        // Ambil jumlah tugas yang sudah selesai
+        const [tugasSelesaiResult] = await db.execute(
+            'SELECT COUNT(*) AS tugasSelesai FROM detail_riwayat_luar WHERE id_unit = ? AND id_riwayat = ? AND id_status = 2', [id_unit, id_riwayat]
+        );
+
+        const tugasSelesai = tugasSelesaiResult[0].tugasSelesai;
+
+        // Cek apakah semua tugas sudah selesai
+        const semuaSelesai = tugasSelesai >= totalTugas;
+
+        res.json({ semuaSelesai, totalTugas, tugasSelesai });
+    } catch (err) {
+        console.error('❌ Error saat pengecekan tugas:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
+    }
+});
+
 
 
 module.exports = router;
