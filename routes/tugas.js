@@ -260,41 +260,37 @@ router.get('/cek-status/:id_tugas/:id_riwayat', async(req, res) => {
 });
 
 // Endpoint untuk mengambil detail riwayat berdasarkan id_unit dan id_riwayat
-router.get('/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
+router.get('/api/tugas/detail_riwayat/:id_unit/:id_riwayat', async(req, res) => {
     try {
-        const id_unit = parseInt(req.params.id_unit, 10);
-        const id_riwayat = parseInt(req.params.id_riwayat, 10);
+        const idUnit = parseInt(req.params.id_unit, 10);
+        const idRiwayat = parseInt(req.params.id_riwayat, 10);
 
-        console.log(`📌 [GET] /detail_riwayat/${id_unit}/${id_riwayat} diakses`);
+        console.log(`📌 [GET] /api/tugas/detail_riwayat/${idUnit}/${idRiwayat} diakses`);
 
-        // Query untuk mengambil detail riwayat berdasarkan id_unit dan id_riwayat
+        // Query yang mencocokkan id_unit dan id_riwayat
         const query = `
             SELECT * 
             FROM detail_riwayat_luar 
-            WHERE id_unit = ? AND id_riwayat = ?
-        `;
+            WHERE id_unit = ? AND id_riwayat = ?`;
 
         console.log(`🛠️ Eksekusi Query: ${query}`);
-        console.log(`📌 Parameter Query -> [id_unit: ${id_unit}, id_riwayat: ${id_riwayat}]`);
+        console.log(`📌 Parameter Query -> [id_unit: ${idUnit}, id_riwayat: ${idRiwayat}]`);
 
-        // Eksekusi query ke database
-        const [results] = await db.execute(query, [id_unit, id_riwayat]);
+        const [results] = await db.execute(query, [idUnit, idRiwayat]);
         console.log(`🔍 Hasil Query dari DB:`, results);
 
-        // Jika data ditemukan
         if (results.length > 0) {
-            console.log(`✅ Data ditemukan:`, results);
-            return res.status(200).json(results); // Mengirimkan data detail riwayat
+            console.log(`✅ Data ditemukan:`, results[0]);
+            return res.status(200).json(results);
         } else {
-            // Jika data tidak ditemukan
-            console.log(`⚠️ Data tidak ditemukan untuk id_unit: ${id_unit}, id_riwayat: ${id_riwayat}`);
+            console.log(`⚠️ Data tidak ditemukan untuk id_unit: ${idUnit}, id_riwayat: ${idRiwayat}`);
             return res.status(404).json({ message: 'Data tidak ditemukan' });
         }
     } catch (err) {
-        // Jika terjadi error
-        console.error('❌ Error mengambil data riwayat:', err);
+        console.error('❌ Error mengambil detail riwayat:', err);
         return res.status(500).json({ message: 'Terjadi kesalahan server', error: err.message });
     }
 });
+
 
 module.exports = router;
