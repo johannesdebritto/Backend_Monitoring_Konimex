@@ -302,7 +302,6 @@ router.get('/cek-selesai-luar/:id_riwayat', async(req, res) => {
     const { id_riwayat } = req.params;
 
     try {
-        // Ambil id_unit berdasarkan id_riwayat
         const [unitResult] = await db.execute(
             'SELECT id_unit FROM riwayat_luar WHERE id_riwayat = ? LIMIT 1', [id_riwayat]
         );
@@ -313,35 +312,29 @@ router.get('/cek-selesai-luar/:id_riwayat', async(req, res) => {
 
         const id_unit = unitResult[0].id_unit;
 
-        // Ambil total tugas di unit ini
         const [totalTugasResult] = await db.execute(
             'SELECT COUNT(*) AS totalTugas FROM tugas_unit WHERE id_unit = ?', [id_unit]
         );
-
         const totalTugas = totalTugasResult[0].totalTugas;
 
-        // Ambil jumlah tugas yang sudah selesai
         const [tugasSelesaiResult] = await db.execute(
             'SELECT COUNT(*) AS tugasSelesai FROM detail_riwayat_luar WHERE id_unit = ? AND id_riwayat = ? AND id_status = 2', [id_unit, id_riwayat]
         );
-
         const tugasSelesai = tugasSelesaiResult[0].tugasSelesai;
 
-        // Logika pengecekan selesai
-        let semuaSelesai = false;
+        // ✅ Logika sesuai yang kamu mau:
+        const semuaSelesai =
+            totalTugas === 0 || tugasSelesai === totalTugas;
 
-        if (tugasSelesai === 0) {
-            // Belum ada yang dikerjakan sama sekali, masih dianggap aman
-            semuaSelesai = true;
-        } else if (tugasSelesai >= totalTugas) {
-            // Semua tugas sudah selesai
-            semuaSelesai = true;
-        } else {
-            // Sudah ada yang dikerjakan tapi belum semua → tidak boleh keluar
-            semuaSelesai = false;
+        const progressTapiBelumSelesai =
+            tugasSelesai > 0 && tugasSelesai < totalTugas;
+
+        // ❌ Kalau sudah mulai tapi belum semua selesai, gak boleh keluar
+        if (progressTapiBelumSelesai) {
+            return res.json({ semuaSelesai: false, totalTugas, tugasSelesai });
         }
 
-        res.json({ semuaSelesai, totalTugas, tugasSelesai });
+        return res.json({ semuaSelesai, totalTugas, tugasSelesai });
     } catch (err) {
         console.error('❌ Error saat pengecekan tugas:', err);
         res.status(500).json({ message: 'Terjadi kesalahan server' });
