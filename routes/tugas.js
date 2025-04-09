@@ -327,8 +327,19 @@ router.get('/cek-selesai-luar/:id_riwayat', async(req, res) => {
 
         const tugasSelesai = tugasSelesaiResult[0].tugasSelesai;
 
-        // Cek apakah semua tugas sudah selesai
-        const semuaSelesai = tugasSelesai >= totalTugas;
+        // Logika pengecekan selesai
+        let semuaSelesai = false;
+
+        if (tugasSelesai === 0) {
+            // Belum ada yang dikerjakan sama sekali, masih dianggap aman
+            semuaSelesai = true;
+        } else if (tugasSelesai >= totalTugas) {
+            // Semua tugas sudah selesai
+            semuaSelesai = true;
+        } else {
+            // Sudah ada yang dikerjakan tapi belum semua → tidak boleh keluar
+            semuaSelesai = false;
+        }
 
         res.json({ semuaSelesai, totalTugas, tugasSelesai });
     } catch (err) {
@@ -336,7 +347,6 @@ router.get('/cek-selesai-luar/:id_riwayat', async(req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
 
 
 module.exports = router;
