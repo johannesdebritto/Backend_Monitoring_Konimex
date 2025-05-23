@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require("../db"); // Koneksi database
 
 // Endpoint untuk menerima data sinkronisasi dari aplikasi Flutter
-router.post("/sync", async (req, res) => {
+router.post("/", async (req, res) => {
   const dataList = req.body;
 
   if (!Array.isArray(dataList)) {
